@@ -16,7 +16,7 @@ env:
 install:
   - pip install coveralls
   - pip install -U ripozo-tests
-  - pip install -q Django<$DJANGO_VERSION
+  - pip install --pre -q 'Django<$DJANGO_VERSION'
   - python setup.py -q install
 script:
   coverage run --source=django_ripozo setup.py test
