@@ -5,12 +5,12 @@ from __future__ import unicode_literals
 
 from django_ripozo.dispatcher import DjangoDispatcher
 
-from ripozo_tests.python2base import TestBase
+from django_ripozo_tests.helpers.common import UnittestBase
 
 import unittest
 
 
-class TestDispatcher(TestBase, unittest.TestCase):
+class TestDispatcher(UnittestBase, unittest.TestCase):
     def test_base_url(self):
         """
         Tests the base_url property

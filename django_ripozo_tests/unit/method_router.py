@@ -3,14 +3,17 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.http import HttpResponseNotAllowed, HttpResponse
+
 from django_ripozo.dispatcher import MethodRouter, MethodNotAllowed
 
-from ripozo_tests.python2base import TestBase
+from django_ripozo_tests.helpers.common import UnittestBase
 
+import mock
 import unittest
 
 
-class TestDispatcher(TestBase, unittest.TestCase):
+class TestDispatcher(UnittestBase, unittest.TestCase):
     """
     unit tests for the ``MethodRouter`` class
     """
@@ -45,7 +48,33 @@ class TestDispatcher(TestBase, unittest.TestCase):
         Tests whether calling an instance of MethodRouter
         properly dispatches an apimethod
         """
-        pass
+        dispatcher = mock.MagicMock()
+        adapter = mock.MagicMock()
+        adapter.formatted_body = 'some_body'
+        adapter.extra_headers = {'some': 'header'}
+        dispatcher.dispatch.return_value = adapter
+        mr = MethodRouter(None, dispatcher)
+
+        def fake():
+            pass
+        mr.add_route(endpoint_func=fake, methods=['GET', 'post'])
+
+        request = mock.MagicMock()
+        request.method = 'put'
+        resp = mr(request)
+        self.assertIsInstance(resp, HttpResponseNotAllowed)
+
+        request.method = 'get'
+        resp = mr(request)
+        self.assertIsInstance(resp, HttpResponse)
+        self.assertEqual(dispatcher.dispatch.call_count, 1)
+
+        request.method = 'post'
+        resp = mr(request)
+        self.assertIsInstance(resp, HttpResponse)
+        self.assertIsInstance(resp, HttpResponse)
+        self.assertEqual(dispatcher.dispatch.call_count, 2)
+
 
     def test_method_map_property(self):
         """
