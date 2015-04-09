@@ -1,3 +1,5 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -21,6 +23,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.eggs/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -53,5 +56,14 @@ docs/_build/
 # PyBuilder
 target/
 
-# PyCharm
+# PyCharm IDE
 .idea/
+
+.git.bfg-report/2015-02-05/19-57-11/cache-stats.txt
+
+.git.bfg-report/2015-02-05/19-57-11/object-id-map.old-new.txt
+
+# PyPi private file
+.pypirc
+
+setup.cfg
