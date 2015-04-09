@@ -109,7 +109,7 @@ class MethodRouter(object):
     def __call__(self, django_request, **url_parameters):
         try:
             endpoint_func = self.get_func_for_method(django_request.method)
-        except MethodNotAllowed, e:
+        except MethodNotAllowed as e:
             return HttpResponseNotAllowed(e)
         request = DjangoRequestContainer(django_request, url_params=url_parameters,
                                          query_args=django_request.GET, body_args=django_request.POST,
