@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django_ripozo.dispatcher import DjangoDispatcher
+from django_ripozo.dispatcher import DjangoDispatcher, MethodRouter
 
 from django_ripozo_tests.helpers.common import UnittestBase
 
@@ -59,7 +59,13 @@ class TestDispatcher(UnittestBase, unittest.TestCase):
         """
         Tests the register_route method on the DjangoDispatcher instance
         """
-        pass
+        d = DjangoDispatcher()
+        def fake():
+            pass
+        d.register_route('fake', endpoint_func=fake, route='route', methods=['GET'])
+        route = DjangoDispatcher._convert_url_to_regex('route')
+        self.assertIn(route, d.url_map)
+        self.assertIsInstance(d.url_map[route], MethodRouter)
 
     def test_url_patterns_property(self):
         """
