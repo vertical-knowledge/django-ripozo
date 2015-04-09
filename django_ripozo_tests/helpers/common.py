@@ -12,4 +12,7 @@ import os
 class UnittestBase(TestBase):
     def setUp(self):
         os.environ['DJANGO_SETTINGS_MODULE'] = 'django_ripozo_tests.helpers.django_settings'
-        django.setup()
+        try:
+            django.setup()
+        except AttributeError:
+            pass
