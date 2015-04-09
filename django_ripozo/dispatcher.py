@@ -100,7 +100,11 @@ class MethodRouter(object):
 
     def add_route(self, endpoint_func=None, endpoint=None, methods=None, **options):
         for method in methods:
-            self.method_map[method] = endpoint_func
+            method = method.lower()
+            if method in self.method_map:
+                raise ValueError('The method {0} is already registered for the route '
+                                 '{1}'.format(method, self.route))
+            self.method_map[method.lower()] = endpoint_func
 
     def __call__(self, django_request, **url_parameters):
         try:
