@@ -55,7 +55,7 @@ class DjangoDispatcher(DispatcherBase):
         urls = []
         for router in six.itervalues(self.url_map):
             urls.append(url(router.route, router))
-        return patterns('', *urls)
+        return patterns(self.base_url, *urls)
 
 
     @staticmethod
