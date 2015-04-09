@@ -14,7 +14,7 @@ from ripozo.viewsets.request import RequestContainer
 import re
 import six
 
-_url_parameter_finder = re.compile(r'<(.+?>)')
+_url_parameter_finder = re.compile(r'<(.+?)>')
 
 
 class DjangoDispatcher(DispatcherBase):
@@ -71,7 +71,7 @@ class DjangoDispatcher(DispatcherBase):
         :return: A django formatted url regex pattern.
         :rtype: unicode
         """
-        url_parameters = _url_parameter_finder.findall(route)
+        url_parameters = set(_url_parameter_finder.findall(route))
         for param in url_parameters:
             old_param = '<{0}>'.format(param)
             new_param = '(?P<{0}>[^/]+)'.format(param)
