@@ -8,14 +8,7 @@ __pkg_name__ = 'django-version'
 
 from setuptools import setup, find_packages
 
-import os
-
 version = '0.1.0'
-
-base_dir = os.path.dirname(__file__)
-
-# with open(os.path.join(base_dir, 'README.rst'), 'r+b') as readme:
-#     long_description = readme.read()
 
 setup(
     author=__author__,
@@ -24,7 +17,8 @@ setup(
     version=version,
     packages=find_packages(exclude=['tests', 'tests.*']),
     include_package_data=True,
-    description='An extension of ripozo to integrate ripozo with Django',
+    description=('Integrates ripozo with django for fast, '
+                 'flexible Hypermedia, HATEOAS, and other REST apis'),
     # long_description=long_description,
     install_requires=[
         'ripozo',
