@@ -88,13 +88,65 @@ class DjangoManager(BaseManager):
         return self.serialize_model(model)
 
     def retrieve_list(self, filters, *args, **kwargs):
-        pass
+        """
+        Retrieves a list of records.
+
+        :param dict filters:
+        :return:
+        :rtype:
+        """
+        count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
+        page = filters.pop(self.pagination_pk_query_arg, 0)
+
+        offset = page * count
+        total = self.queryset.filter(**filters).count()
+        queryset = self.queryset.filter(**filters)[offset:offset + count]
+
+        prev_page = None
+        next_page = None
+        if total > offset + count:
+            next_page = page + 1
+        if page > 0:
+            prev_page = page - 1
+        links = dict()
+        if prev_page:
+            links.update(dict(prev={self.pagination_count_query_arg: count, self.pagination_pk_query_arg: prev_page}))
+        if next_page:
+            links.update(dict(next={self.pagination_count_query_arg: count, self.pagination_pk_query_arg: next_page}))
+
+        props = []
+        for m in queryset:
+            props.append(self.serialize_model(m))
+        return props, dict(links=links)
 
     def update(self, lookup_keys, updates, *args, **kwargs):
-        pass
+        """
+        Updates the model found with the lookup keys and returns
+        the serialized model.
+
+        :param dict lookup_keys:
+        :param dict updates:
+        :return:
+        :rtype: dict
+        :raises: NotFoundException
+        """
+        model = self.get_model(lookup_keys)
+        for key, value in six.iteritems(updates):
+            if key not in self.fields:
+                continue
+            setattr(model, key, value)
+        model.save()
+        return self.serialize_model(model)
 
     def delete(self, lookup_keys, *args, **kwargs):
-        pass
+        """
+        Deletes the model found with lookup_keys
+
+        :param dict okup_keys:
+        :return: Empty dict
+        """
+        model = self.get_model(lookup_keys)
+        model.delete()
 
     def get_model(self, lookup_keys):
         """

@@ -141,7 +141,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         """
         Tests creating an existing object.
         """
-        # TODO
+        pass
 
     def test_retrieve(self):
         """
