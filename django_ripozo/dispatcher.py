@@ -19,7 +19,7 @@ _url_parameter_finder = re.compile(r'<(.+?)>')
 
 
 class DjangoDispatcher(DispatcherBase):
-    # TODO docs/test
+    # TODO docs
     _url_map = None
     _routers = None
 
