@@ -24,7 +24,7 @@ import uuid
 
 
 def random_string():
-    return ''.join(random.choice(string.letters) for _ in range(20))
+    return ''.join(random.choice(string.ascii_letters) for _ in range(20))
 
 
 def random_int():
