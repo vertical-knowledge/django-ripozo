@@ -3,16 +3,25 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.core.management import call_command
+
+from django.test import TestCase
+
 from ripozo_tests.python2base import TestBase
 
 import django
 import os
 
 
-class UnittestBase(TestBase):
+class UnittestBase(TestCase):
     def setUp(self):
-        os.environ['DJANGO_SETTINGS_MODULE'] = 'django_ripozo_tests.helpers.django_settings'
         try:
             django.setup()
         except AttributeError:
+            pass
+        call_command('syncdb', interactive=False)
+        try:
+            call_command('makemigrations', interactive=False)
+            call_command('migrate', interactive=False)
+        except:
             pass

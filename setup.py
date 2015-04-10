@@ -15,14 +15,15 @@ setup(
     author_email='tim.martin@vertical-knowledge.com',
     name='django-version',
     version=version,
-    packages=find_packages(exclude=['tests', 'tests.*']),
+    packages=find_packages(include=['django_ripozo', 'django_ripozo.*']),
     include_package_data=True,
     description=('Integrates ripozo with django for fast, '
                  'flexible Hypermedia, HATEOAS, and other REST apis'),
     # long_description=long_description,
     install_requires=[
         'ripozo',
-        'Django>=1.4'
+        'Django>=1.4',
+        'six'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

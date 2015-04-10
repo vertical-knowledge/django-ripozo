@@ -3,69 +3,81 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.db import models
+from datetime import datetime
+import random
+import string
+import unittest
+import uuid
+
 from django.db.models.manager import Manager
+from ripozo.viewsets.fields.common import StringField, BooleanField, FloatField, DateTimeField, IntegerField
+import six
 
 from django_ripozo.manager import DjangoManager
-
 from django_ripozo_tests.helpers.common import UnittestBase
+from testapp.models import MyModel
 
-from ripozo.viewsets.fields.common import BaseField, StringField, ListField, \
-    BooleanField, FloatField, DateTimeField, IntegerField
 
-import six
-import unittest
+def random_string():
+    return ''.join(random.choice(string.letters) for _ in range(20))
+
+
+def random_int():
+    return random.choice(range(100))
+
+
+def random_bool():
+    return random.choice([True, False])
 
 
 class TestDjangoManager(UnittestBase, unittest.TestCase):
     def setUp(self):
-        class MyModel(models.Model):
-            """
-            Doesn't include relationships or files for now
-            """
-            biginteger = models.BigIntegerField()
-            boolean = models.BooleanField()
-            char = models.CharField(max_length=100)
-            csi = models.CommaSeparatedIntegerField(max_length=100)
-            date_ = models.DateField()
-            datetime_ = models.DateTimeField()
-            decimal_ = models.DecimalField(max_digits=5, decimal_places=2)
-            duration = models.DurationField()
-            email = models.EmailField()
-            float_ = models.FloatField()
-            integer = models.IntegerField()
-            ipaddress = models.IPAddressField()
-            genericip = models.GenericIPAddressField()
-            nullbool = models.NullBooleanField()
-            positiveint = models.PositiveIntegerField()
-            positivesmallint = models.PositiveSmallIntegerField()
-            slug = models.SlugField()
-            smallint = models.SmallIntegerField()
-            time_ = models.TimeField()
-            url = models.URLField()
-            uuid = models.UUIDField()
-
         class MyMangaer(DjangoManager):
             model = MyModel
             _fields = ['id', 'biginteger', 'boolean', 'char', 'csi',
-                       'date_', 'datetime_', 'decimal_', 'duration',
+                       'date_', 'datetime_', 'decimal_',
                        'email', 'float_', 'integer', 'ipaddress', 'genericip',
                        'nullbool', 'positiveint', 'positivesmallint', 'slug',
                        'smallint', 'time_', 'url', 'uuid']
 
         self.model = MyModel
         self.manager = MyMangaer
+        super(TestDjangoManager, self).setUp()
 
     @property
     def field_type_dict(self):
         return dict(id=IntegerField, biginteger=IntegerField, boolean=BooleanField,
                     char=StringField, csi=StringField, date_=DateTimeField, datetime_=DateTimeField,
-                    decimal_=FloatField, duration=DateTimeField, email=StringField, float_=FloatField,
+                    decimal_=FloatField, email=StringField, float_=FloatField,
                     integer=IntegerField, ipaddress=StringField, genericip=StringField,
                     nullbool=BooleanField, positiveint=IntegerField, positivesmallint=IntegerField,
                     slug=StringField, smallint=IntegerField, time_=DateTimeField, url=StringField,
                     uuid=StringField)
 
+    def get_fields_dict(self):
+        return dict(
+            id=random_int(),
+            biginteger=random_int(),
+            boolean=random_bool(),
+            char=random_string(),
+            csi=random_string(),
+            date_=datetime.now(),
+            datetime_=datetime.now(),
+            decimal_=1.02,
+            # duration=datetime.now(),
+            email=random_string(),
+            float_=1.02,
+            integer=random_int(),
+            ipaddress=random_string(),
+            genericip=random_string(),
+            nullbool=random_bool(),
+            positiveint=random_int(),
+            positivesmallint=random_int(),
+            slug=random_string(),
+            smallint=random_int(),
+            time_=datetime.now(),
+            url=random_string(),
+            uuid=six.text_type(uuid.uuid1()))
 
     def test_queryset_property(self):
         """
@@ -91,3 +103,15 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         for name, value in six.iteritems(self.field_type_dict):
             self.assertIsInstance(self.manager().get_field_type(name), value,
                                   msg='{0} does not return {1}'.format(name, value))
+
+    def test_create(self):
+        """
+        Tests the creation of an object using the serializer.
+        """
+        m = self.manager()
+        value = self.get_fields_dict()
+        response = m.create(value)
+        for key, value in six.iteritems(value):
+            if isinstance(value, datetime):
+                value = value.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+            self.assertEqual(response[key], value)

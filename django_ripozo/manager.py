@@ -3,11 +3,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.core import serializers
 from django.db import models
 
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.common import BaseField, StringField, \
     BooleanField, FloatField, DateTimeField, IntegerField
+
+import json
+import six
 
 
 class DjangoManager(BaseManager):
@@ -48,9 +52,25 @@ class DjangoManager(BaseManager):
             return FloatField(name)
         else:
             return BaseField(name)
-        
+
     def create(self, values, *args, **kwargs):
-        pass
+        """
+        Creates a new model using the values provided.
+        *args and **kwargs are ignored.
+
+        :param dict values: A dictionary of the values to set
+            on the new model that is being created
+        :param list args: Ignored for now
+        :param dict kwargs: Ignored for now
+        :return: The new properties on the model,
+            including the items on the model that are
+            defaults
+        :rtype: dict
+        """
+        model = self.model()
+        model = self._set_fields_on_model(model, values)
+        model.save()
+        return self.serialize_model(model)
 
     def retrieve(self, lookup_keys, *args, **kwargs):
         pass
@@ -63,3 +83,35 @@ class DjangoManager(BaseManager):
 
     def delete(self, lookup_keys, *args, **kwargs):
         pass
+
+    def serialize_model(self, model):
+        """
+        :param model: The model that is being serialized.
+        :type model: django.db.models.Model
+        :return: The serialized model
+        :rtype: dict
+        """
+        data = serializers.serialize('json', [model], fields=self.fields)
+        data = json.loads(data)[0]['fields']
+        if 'id' in self.fields:
+            data['id'] = model.id
+        if 'pk' in self.fields:
+            data['pk'] = model.pk
+        return data
+
+    def _set_fields_on_model(self, model, values):
+        """
+        Will set the values on the model if and only
+        if they are present in the fields property.
+        If they are not it will silently skip them.
+
+        :param model:
+        :type model: django.db.models.Model
+        :param dict values:
+        :return: The updated model
+        :rtype: django.db.models.Model
+        """
+        for name, value in six.iteritems(values):
+            if name in self.fields:
+                setattr(model, name, value)
+        return model
