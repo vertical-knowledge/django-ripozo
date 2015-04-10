@@ -13,8 +13,9 @@ import django
 import os
 
 
-class UnittestBase(TestCase):
-    def setUp(self):
+class UnittestBase(TestBase):
+    @classmethod
+    def setUpClass(cls):
         try:
             django.setup()
         except AttributeError:

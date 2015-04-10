@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import datetime
+from datetime import datetime, time, date
 import random
 import string
 import unittest
@@ -44,11 +44,29 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         self.manager = MyMangaer
         super(TestDjangoManager, self).setUp()
 
+    def assertJsonifiedDict(self, d1, d2):
+        for key, value in six.iteritems(d1):
+            response_value = d2[key]
+            if isinstance(value, datetime):
+                value = value.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+                response_value = response_value.strip('Z')
+            elif isinstance(value, time):
+                value = value.strftime('%H:%M:%S')
+            elif isinstance(value, date):
+                value = value.strftime('%Y-%m-%d')
+            self.assertEqual(response_value, value)
+
+    def create_model(self):
+        values = self.get_fields_dict()
+        model = self.model(**values)
+        model.save()
+        return dict(id=model.id), values
+
     @property
     def field_type_dict(self):
         return dict(id=IntegerField, biginteger=IntegerField, boolean=BooleanField,
                     char=StringField, csi=StringField, date_=DateTimeField, datetime_=DateTimeField,
-                    decimal_=FloatField, email=StringField, float_=FloatField,
+                    decimal_=StringField, email=StringField, float_=FloatField,
                     integer=IntegerField, ipaddress=StringField, genericip=StringField,
                     nullbool=BooleanField, positiveint=IntegerField, positivesmallint=IntegerField,
                     slug=StringField, smallint=IntegerField, time_=DateTimeField, url=StringField,
@@ -56,14 +74,13 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
 
     def get_fields_dict(self):
         return dict(
-            id=random_int(),
             biginteger=random_int(),
             boolean=random_bool(),
             char=random_string(),
             csi=random_string(),
-            date_=datetime.now(),
+            date_=date.today(),
             datetime_=datetime.now(),
-            decimal_=1.02,
+            decimal_='1.02',
             # duration=datetime.now(),
             email=random_string(),
             float_=1.02,
@@ -75,7 +92,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
             positivesmallint=random_int(),
             slug=random_string(),
             smallint=random_int(),
-            time_=datetime.now(),
+            time_=time(),
             url=random_string(),
             uuid=six.text_type(uuid.uuid1()))
 
@@ -111,7 +128,28 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         m = self.manager()
         value = self.get_fields_dict()
         response = m.create(value)
-        for key, value in six.iteritems(value):
-            if isinstance(value, datetime):
-                value = value.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-            self.assertEqual(response[key], value)
+        self.assertJsonifiedDict(value, response)
+        for f in self.manager.fields:
+            self.assertIn(f, response)
+
+    def test_create_existing(self):
+        """
+        Tests creating an existing object.
+        """
+        # TODO
+
+    def test_retrieve(self):
+        """
+        Tests retrieving an existing model
+        """
+        lookup_keys, values = self.create_model()
+        values.update(lookup_keys)
+        response = self.manager().retrieve(lookup_keys)
+        self.assertJsonifiedDict(values, response)
+
+    def test_retrieve_404(self):
+        """
+        Tests retrieving a model that does not
+        exist.
+        """
+        # TODO

@@ -42,13 +42,13 @@ class DjangoManager(BaseManager):
         if isinstance(column, (models.IntegerField, models.AutoField)):
             return IntegerField(name)
         elif isinstance(column, (models.CharField, models.GenericIPAddressField,
-                                 models.IPAddressField, models.UUIDField)):
+                                 models.IPAddressField, models.UUIDField, models.DecimalField)):
             return StringField(name)
         elif isinstance(column, (models.DateTimeField, models.DateField, models.TimeField, models.DurationField)):
             return DateTimeField(name)
         elif isinstance(column, (models.BooleanField, models.NullBooleanField,)):
             return BooleanField(name)
-        elif isinstance(column, (models.FloatField, models.DecimalField)):
+        elif isinstance(column, models.FloatField):
             return FloatField(name)
         else:
             return BaseField(name)
@@ -73,7 +73,18 @@ class DjangoManager(BaseManager):
         return self.serialize_model(model)
 
     def retrieve(self, lookup_keys, *args, **kwargs):
-        pass
+        """
+        Gets a model and selects the fields from the fields
+        attribute on this manager to return in a dict.
+
+        :param dict lookup_keys: The keys used to find the model
+            to serialize
+        :return: The serialized model in a dictionary form with just
+            the fields specified in the manager.
+        :rtype: dict
+        """
+        model = self.queryset.filter(**lookup_keys).get()
+        return self.serialize_model(model)
 
     def retrieve_list(self, filters, *args, **kwargs):
         pass
