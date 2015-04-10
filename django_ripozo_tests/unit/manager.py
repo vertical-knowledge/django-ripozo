@@ -40,10 +40,10 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         class MyMangaer(DjangoManager):
             model = MyModel
             _fields = ['id', 'biginteger', 'boolean', 'char', 'csi',
-                       'date_', 'datetime_', 'decimal_',
-                       'email', 'float_', 'integer', 'ipaddress', 'genericip',
+                       'date_a', 'datetime_a', 'decimal_a',
+                       'email', 'float_a', 'integer', 'ipaddress', 'genericip',
                        'nullbool', 'positiveint', 'positivesmallint', 'slug',
-                       'smallint', 'time_', 'url']
+                       'smallint', 'time_a', 'url']
 
         self.model = MyModel
         self.manager = MyMangaer
@@ -70,11 +70,11 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
     @property
     def field_type_dict(self):
         return dict(id=IntegerField, biginteger=IntegerField, boolean=BooleanField,
-                    char=StringField, csi=StringField, date_=DateTimeField, datetime_=DateTimeField,
-                    decimal_=StringField, email=StringField, float_=FloatField,
+                    char=StringField, csi=StringField, date_a=DateTimeField, datetime_a=DateTimeField,
+                    decimal_a=StringField, email=StringField, float_a=FloatField,
                     integer=IntegerField, ipaddress=StringField, genericip=StringField,
                     nullbool=BooleanField, positiveint=IntegerField, positivesmallint=IntegerField,
-                    slug=StringField, smallint=IntegerField, time_=DateTimeField, url=StringField)
+                    slug=StringField, smallint=IntegerField, time_a=DateTimeField, url=StringField)
 
     def get_fields_dict(self):
         return dict(
@@ -82,12 +82,12 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
             boolean=random_bool(),
             char=random_string(),
             csi=random_string(),
-            date_=date.today(),
-            datetime_=datetime.now(),
-            decimal_='1.02',
+            date_a=date.today(),
+            datetime_a=datetime.now(),
+            decimal_a='1.02',
             # duration=datetime.now(),
             email=random_string(),
-            float_=1.02,
+            float_a=1.02,
             integer=random_int(),
             ipaddress=random_string(),
             genericip=random_string(),
@@ -96,7 +96,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
             positivesmallint=random_int(),
             slug=random_string(),
             smallint=random_int(),
-            time_=time(),
+            time_a=time(),
             url=random_string()
         )
 
