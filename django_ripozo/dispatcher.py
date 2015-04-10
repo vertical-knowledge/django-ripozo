@@ -7,8 +7,9 @@ __author__ = 'Tim Martin'
 from django.http import HttpResponseNotAllowed, HttpResponse
 from django.conf.urls import patterns, url
 
+from django_ripozo.exceptions import MethodNotAllowed
+
 from ripozo.dispatch.dispatch_base import DispatcherBase
-from ripozo.exceptions import RestException
 from ripozo.viewsets.request import RequestContainer
 
 import re
@@ -42,7 +43,20 @@ class DjangoDispatcher(DispatcherBase):
         return self._base_url
 
     def register_route(self, endpoint, endpoint_func=None, route=None, methods=None, **options):
-        # TODO docs
+        """
+        Adds a route to the url_map which is used when getting
+        the url_patterns property which are then added to the django
+        app.
+
+        :param unicode endpoint: The name of this endpoint
+        :param function endpoint_func: the function that should be called when
+            this endpoint is hit.
+        :param unicode route: The url that corresponds to this endpoint.
+            Each unique url generates a MethodRouter which then dispatches
+            them to the appopriate endpoints for the http verbs
+        :param list methods: The http verbs that correspond to this endpoint
+        :param dict options: Additional options.  Not used at this time
+        """
         route = self._convert_url_to_regex(route)
         if route not in self.url_map:
             self.url_map[route] = MethodRouter(route, self)
@@ -78,12 +92,6 @@ class DjangoDispatcher(DispatcherBase):
             route = route.replace(old_param, new_param)
         route = route.lstrip('/')
         return '^{0}$'.format(route)
-
-
-class MethodNotAllowed(RestException):
-    # TODO docs
-    pass
-
 
 class DjangoRequestContainer(RequestContainer):
     def __init__(self, request, *args, **kwargs):

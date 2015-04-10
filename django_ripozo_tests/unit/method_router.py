@@ -5,7 +5,8 @@ from __future__ import unicode_literals
 
 from django.http import HttpResponseNotAllowed, HttpResponse
 
-from django_ripozo.dispatcher import MethodRouter, MethodNotAllowed
+from django_ripozo.dispatcher import MethodRouter
+from django_ripozo.exceptions import MethodNotAllowed
 
 from django_ripozo_tests.helpers.common import UnittestBase
 
