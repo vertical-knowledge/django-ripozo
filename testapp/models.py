@@ -24,4 +24,3 @@ class MyModel(models.Model):
     smallint = models.SmallIntegerField()
     time_ = models.TimeField()
     url = models.URLField()
-    uuid = models.UUIDField()

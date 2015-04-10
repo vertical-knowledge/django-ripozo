@@ -43,7 +43,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
                        'date_', 'datetime_', 'decimal_',
                        'email', 'float_', 'integer', 'ipaddress', 'genericip',
                        'nullbool', 'positiveint', 'positivesmallint', 'slug',
-                       'smallint', 'time_', 'url', 'uuid']
+                       'smallint', 'time_', 'url']
 
         self.model = MyModel
         self.manager = MyMangaer
@@ -74,8 +74,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
                     decimal_=StringField, email=StringField, float_=FloatField,
                     integer=IntegerField, ipaddress=StringField, genericip=StringField,
                     nullbool=BooleanField, positiveint=IntegerField, positivesmallint=IntegerField,
-                    slug=StringField, smallint=IntegerField, time_=DateTimeField, url=StringField,
-                    uuid=StringField)
+                    slug=StringField, smallint=IntegerField, time_=DateTimeField, url=StringField)
 
     def get_fields_dict(self):
         return dict(
@@ -98,8 +97,8 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
             slug=random_string(),
             smallint=random_int(),
             time_=time(),
-            url=random_string(),
-            uuid=six.text_type(uuid.uuid1()))
+            url=random_string()
+        )
 
     def test_queryset_property(self):
         """
