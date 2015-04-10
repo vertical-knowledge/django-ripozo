@@ -161,7 +161,8 @@ class DjangoManager(BaseManager):
         try:
             return self.queryset.filter(**lookup_keys).get()
         except self.model.DoesNotExist as e:
-            raise NotFoundException(e.message)
+            raise NotFoundException('No model of type {0} could be found using'
+                                    ' lookup keys {1}'.format(self.model.__name__, lookup_keys))
 
     def serialize_model(self, model):
         """
