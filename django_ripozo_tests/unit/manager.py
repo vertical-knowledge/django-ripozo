@@ -4,18 +4,23 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime, time, date
-import random
-import string
-import unittest
-import uuid
 
 from django.db.models.manager import Manager
-from ripozo.viewsets.fields.common import StringField, BooleanField, FloatField, DateTimeField, IntegerField
-import six
 
 from django_ripozo.manager import DjangoManager
+
 from django_ripozo_tests.helpers.common import UnittestBase
+
+from ripozo.exceptions import NotFoundException
+from ripozo.viewsets.fields.common import StringField, BooleanField, FloatField, DateTimeField, IntegerField
+
 from testapp.models import MyModel
+
+import random
+import string
+import six
+import unittest
+import uuid
 
 
 def random_string():
@@ -152,4 +157,4 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         Tests retrieving a model that does not
         exist.
         """
-        # TODO
+        self.assertRaises(NotFoundException, self.manager().retrieve, dict(id=1040230))

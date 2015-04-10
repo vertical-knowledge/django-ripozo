@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 from django.core import serializers
 from django.db import models
 
+from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.common import BaseField, StringField, \
     BooleanField, FloatField, DateTimeField, IntegerField
@@ -83,7 +84,7 @@ class DjangoManager(BaseManager):
             the fields specified in the manager.
         :rtype: dict
         """
-        model = self.queryset.filter(**lookup_keys).get()
+        model = self.get_model(lookup_keys)
         return self.serialize_model(model)
 
     def retrieve_list(self, filters, *args, **kwargs):
@@ -94,6 +95,21 @@ class DjangoManager(BaseManager):
 
     def delete(self, lookup_keys, *args, **kwargs):
         pass
+
+    def get_model(self, lookup_keys):
+        """
+        Retrieves a model with the specified lookup keys
+
+        :param dict lookup_keys: The fields and attributes that
+            uniquely identify the model
+        :return: The model if found
+        :rtype: django.db.models.Model
+        :raises: NotFoundException
+        """
+        try:
+            return self.queryset.filter(**lookup_keys).get()
+        except self.model.DoesNotExist as e:
+            raise NotFoundException(e.message)
 
     def serialize_model(self, model):
         """
