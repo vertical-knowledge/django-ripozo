@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 from django.db import models
 
 from ripozo.managers.base import BaseManager
-from ripozo.viewsets.fields.common import BaseField, StringField, ListField, \
+from ripozo.viewsets.fields.common import BaseField, StringField, \
     BooleanField, FloatField, DateTimeField, IntegerField
 
 
@@ -46,7 +46,9 @@ class DjangoManager(BaseManager):
             return BooleanField(name)
         elif isinstance(column, (models.FloatField, models.DecimalField)):
             return FloatField(name)
-
+        else:
+            return BaseField(name)
+        
     def create(self, values, *args, **kwargs):
         pass
 
