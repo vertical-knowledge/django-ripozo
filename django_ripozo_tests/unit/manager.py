@@ -10,6 +10,10 @@ from django_ripozo.manager import DjangoManager
 
 from django_ripozo_tests.helpers.common import UnittestBase
 
+from ripozo.viewsets.fields.common import BaseField, StringField, ListField, \
+    BooleanField, FloatField, DateTimeField, IntegerField
+
+import six
 import unittest
 
 
@@ -52,6 +56,17 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         self.model = MyModel
         self.manager = MyMangaer
 
+    @property
+    def field_type_dict(self):
+        return dict(id=IntegerField, biginteger=IntegerField, boolean=BooleanField,
+                    char=StringField, csi=StringField, date_=DateTimeField, datetime_=DateTimeField,
+                    decimal_=FloatField, duration=DateTimeField, email=StringField, float_=FloatField,
+                    integer=IntegerField, ipaddress=StringField, genericip=StringField,
+                    nullbool=BooleanField, positiveint=IntegerField, positivesmallint=IntegerField,
+                    slug=StringField, smallint=IntegerField, time_=DateTimeField, url=StringField,
+                    uuid=StringField)
+
+
     def test_queryset_property(self):
         """
         Tests the queryset property on the DjangoManager
@@ -69,4 +84,10 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         except AttributeError:
             pass
 
-    def test_
+    def test_get_field_type(self):
+        """
+        Tests whether the appropriate field type is returned.
+        """
+        for name, value in six.iteritems(self.field_type_dict):
+            self.assertIsInstance(self.manager().get_field_type(name), value,
+                                  msg='{0} does not return {1}'.format(name, value))

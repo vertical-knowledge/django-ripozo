@@ -3,9 +3,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.db.models import Model
+from django.db import models
 
 from ripozo.managers.base import BaseManager
+from ripozo.viewsets.fields.common import BaseField, StringField, ListField, \
+    BooleanField, FloatField, DateTimeField, IntegerField
 
 
 class DjangoManager(BaseManager):
@@ -32,7 +34,18 @@ class DjangoManager(BaseManager):
             matches the database type.
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
-        pass
+        column = self.model._meta._forward_fields_map[name]
+        if isinstance(column, (models.IntegerField, models.AutoField)):
+            return IntegerField(name)
+        elif isinstance(column, (models.CharField, models.GenericIPAddressField,
+                                 models.IPAddressField, models.UUIDField)):
+            return StringField(name)
+        elif isinstance(column, (models.DateTimeField, models.DateField, models.TimeField, models.DurationField)):
+            return DateTimeField(name)
+        elif isinstance(column, (models.BooleanField, models.NullBooleanField,)):
+            return BooleanField(name)
+        elif isinstance(column, (models.FloatField, models.DecimalField)):
+            return FloatField(name)
 
     def create(self, values, *args, **kwargs):
         pass
