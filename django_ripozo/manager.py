@@ -43,7 +43,7 @@ class DjangoManager(BaseManager):
         if isinstance(column, (models.IntegerField, models.AutoField)):
             return IntegerField(name)
         elif isinstance(column, (models.CharField, models.GenericIPAddressField,
-                                 models.IPAddressField, models.UUIDField, models.DecimalField)):
+                                 models.IPAddressField, models.DecimalField)):
             return StringField(name)
         elif isinstance(column, (models.DateTimeField, models.DateField, models.TimeField)):
             return DateTimeField(name)
