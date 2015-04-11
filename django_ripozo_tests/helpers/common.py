@@ -22,7 +22,6 @@ class UnittestBase(TestBase):
             pass
         call_command('syncdb', interactive=False)
         try:
-            call_command('makemigrations', interactive=False)
             call_command('migrate', interactive=False)
         except:
             pass

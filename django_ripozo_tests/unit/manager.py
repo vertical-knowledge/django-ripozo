@@ -20,7 +20,6 @@ import random
 import string
 import six
 import unittest
-import uuid
 
 
 def random_string():
