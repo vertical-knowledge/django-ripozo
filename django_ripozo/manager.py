@@ -39,13 +39,13 @@ class DjangoManager(BaseManager):
             matches the database type.
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
-        column = self.model._meta._forward_fields_map[name]
+        column = self.model._meta.get_field_by_name(name)[0]
         if isinstance(column, (models.IntegerField, models.AutoField)):
             return IntegerField(name)
         elif isinstance(column, (models.CharField, models.GenericIPAddressField,
                                  models.IPAddressField, models.UUIDField, models.DecimalField)):
             return StringField(name)
-        elif isinstance(column, (models.DateTimeField, models.DateField, models.TimeField, models.DurationField)):
+        elif isinstance(column, (models.DateTimeField, models.DateField, models.TimeField)):
             return DateTimeField(name)
         elif isinstance(column, (models.BooleanField, models.NullBooleanField,)):
             return BooleanField(name)
