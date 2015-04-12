@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 
 from datetime import datetime, time, date
 
+from decimal import Decimal
+
 from django.db.models.manager import Manager
 
 from django_ripozo.manager import DjangoManager
@@ -82,7 +84,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
             char=random_string(),
             csi=random_string(),
             date_a=date.today(),
-            datetime_a=datetime.now(),
+            datetime_a=datetime.utcnow(),
             decimal_a='1.02',
             # duration=datetime.now(),
             email=random_string(),
@@ -135,12 +137,6 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         for f in self.manager.fields:
             self.assertIn(f, response)
 
-    def test_create_existing(self):
-        """
-        Tests creating an existing object.
-        """
-        pass
-
     def test_retrieve(self):
         """
         Tests retrieving an existing model
@@ -156,3 +152,50 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         exist.
         """
         self.assertRaises(NotFoundException, self.manager().retrieve, dict(id=1040230))
+
+    def test_retrieve_all(self):
+        """
+        Tests the retrieval of all available objects.
+        """
+        assert False
+
+    def test_pagination(self):
+        """
+        Test retrieve_list with pagination.
+        """
+        assert False
+
+    def test_update(self):
+        """
+        Simple check for updating.
+        """
+        lookup, values = self.create_model()
+        new_vals = self.get_fields_dict()
+        vals = self.manager().update(lookup, new_vals)
+        model = self.manager().get_model(lookup)
+        for key, val in six.iteritems(new_vals):
+            model_val = getattr(model, key)
+            if isinstance(model_val, Decimal):
+                model_val = six.text_type(model_val)
+            self.assertEqual(model_val, val)
+
+    def test_update_not_existing(self):
+        """
+        Tests attempting to update an object that does not exist.
+        """
+        self.assertRaises(NotFoundException, self.manager().update, {'id': -1}, {'hehe': 1})
+
+    def test_delete(self):
+        """
+        Tests simple delete
+        """
+        lookup, vals = self.create_model()
+        self.manager().delete(lookup)
+        self.assertRaises(NotFoundException, self.manager().get_model, lookup)
+
+    def test_delete_not_existing(self):
+        """
+        Tests the deletion of a resource that
+        does not exist.
+        """
+        self.assertRaises(NotFoundException, self.manager().delete, {'id': -1})
