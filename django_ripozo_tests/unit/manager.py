@@ -157,11 +157,47 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         """
         Tests the retrieval of all available objects.
         """
-        assert False
+        vals, meta = self.manager().retrieve_list({})
+        original_length = len(vals)
+
+        new_count = 100
+        all_vals = []
+        for i in range(new_count):
+            lookup, indv_vals = self.create_model()
+            indv_vals.update(lookup)
+            all_vals.append(indv_vals)
+        vals, meta = self.manager().retrieve_list({})
+        self.assertEqual(len(vals), original_length + new_count)
 
     def test_pagination(self):
         """
         Test retrieve_list with pagination.
+        """
+        class NewManager(self.manager):
+            paginate_by = 3
+
+        vals, meta = self.manager().retrieve_list({})
+        original_length = len(vals)
+
+        new_count = 100
+        for i in range(new_count):
+            self.create_model()
+
+        vals, meta = NewManager().retrieve_list({})
+        total_retrieved = len(vals)
+        while 'next' in meta['links']:
+            vals, meta = NewManager().retrieve_list({
+                NewManager.pagination_count_query_arg: meta['links']['next'][NewManager.pagination_count_query_arg],
+                NewManager.pagination_pk_query_arg: meta['links']['next'][NewManager.pagination_pk_query_arg]
+            })
+            total_retrieved += len(vals)
+            self.assertLessEqual(len(vals), NewManager.paginate_by)
+        self.assertEqual(original_length + new_count, total_retrieved)
+
+    def test_list_fields_retrieve_all(self):
+        """
+        Checks to ensure that the list fields are used if
+        they are available.
         """
         assert False
 
