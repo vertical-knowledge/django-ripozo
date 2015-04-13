@@ -28,12 +28,24 @@ class DjangoDispatcher(DispatcherBase):
 
     @property
     def url_map(self):
+        """
+        :return: A dictionary of the unicode routes and
+            the MethodRouters that correspond to that route.
+        :rtype: dict
+        """
         if self._url_map is None:
             self._url_map = {}
         return self._url_map
 
     @property
     def base_url(self):
+        """
+        :return: The base part of the url that will
+            be prepended to all routes.  For example,
+            you might use '/api' to dictate what every
+            url should be prepended with.
+        :rtype: unicode
+        """
         return self._base_url
 
     def register_route(self, endpoint, endpoint_func=None, route=None, methods=None, **options):
@@ -60,6 +72,13 @@ class DjangoDispatcher(DispatcherBase):
 
     @property
     def url_patterns(self):
+        """
+        :return: A list of tuples built according to the
+            ``django.conf.urls.patterns`` method.  The
+            first argument is the base_url that will
+            be prepended.
+        :rtype: list
+        """
         urls = []
         for router in six.itervalues(self.url_map):
             urls.append(url(router.route, router))
@@ -95,6 +114,13 @@ class DjangoRequestContainer(RequestContainer):
 
 
 class MethodRouter(object):
+    """
+    This is a callable object that is responsible
+    for calling the specific method responsible for
+    handling the http verb that was used.  This is because
+    Django does not have a manner of directing different
+    HTTP verbs to different methods.
+    """
     _method_map = None
 
     def __init__(self, route, dispatcher):
@@ -102,6 +128,17 @@ class MethodRouter(object):
         self.dispatcher = dispatcher
 
     def add_route(self, endpoint_func=None, endpoint=None, methods=None, **options):
+        """
+        Adds a function to call and the http methods that will
+        correspond to it.  Currently, the endpoint and options are ignored.
+
+        :param function endpoint_func: The function to be called when the route
+            is called with one of the methods specified.
+        :param unicode endpoint: Not used currently
+        :param list methods: A list of the unicode methods that
+            correspond to the endpoint_func.  They are case insensitive.
+        :param dict options: Not used currently.
+        """
         for method in methods:
             method = method.lower()
             if method in self.method_map:
@@ -110,6 +147,15 @@ class MethodRouter(object):
             self.method_map[method.lower()] = endpoint_func
 
     def __call__(self, django_request, **url_parameters):
+        """
+        This is a call to a django method.
+
+        :param django.http.HttpRequest django_request: The django
+            request object.
+        :param dict url_parameters: The named url parameters
+        :return: The django HttpResponse
+        :rtype: django.http.HttpResponse
+        """
         try:
             endpoint_func = self.get_func_for_method(django_request.method)
         except MethodNotAllowed:
