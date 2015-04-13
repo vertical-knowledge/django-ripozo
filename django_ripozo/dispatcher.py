@@ -172,15 +172,19 @@ class MethodRouter(object):
 
     @property
     def method_map(self):
+        """
+        :return: The dictionary of the HTTP methods
+            and their corresponding endpoint functions.
+        :rtype: dict
+        """
         if self._method_map is None:
             self._method_map = {}
         return self._method_map
 
     def get_func_for_method(self, http_method):
         """
-
-        :param unicode method:
-        :return:
+        :param unicode http_method: The http verb
+        :return: The method corresponding to the http verb
         :rtype: types.MethodType
         """
         http_method = http_method.lower()
