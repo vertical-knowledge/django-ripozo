@@ -114,9 +114,7 @@ class DjangoManager(BaseManager):
         if next_page:
             links.update(dict(next={self.pagination_count_query_arg: count, self.pagination_pk_query_arg: next_page}))
 
-        props = []
-        for m in queryset:
-            props.append(self.serialize_model(m))
+        props = self.serialize_list(queryset, fields=self.list_fields)
         return props, dict(links=links)
 
     def update(self, lookup_keys, updates, *args, **kwargs):
@@ -164,20 +162,35 @@ class DjangoManager(BaseManager):
             raise NotFoundException('No model of type {0} could be found using'
                                     ' lookup keys {1}'.format(self.model.__name__, lookup_keys))
 
-    def serialize_model(self, model):
+    def serialize_model(self, model, fields=None):
         """
         :param model: The model that is being serialized.
         :type model: django.db.models.Model
+        :param list fields: The list of fields to include in the serialization
         :return: The serialized model
         :rtype: dict
         """
-        data = serializers.serialize('json', [model], fields=self.fields)
+        fields = fields or self.fields
+        data = serializers.serialize('json', [model], fields=fields)
         data = json.loads(data)[0]['fields']
-        if 'id' in self.fields:
+        if 'id' in fields:
             data['id'] = model.id
-        if 'pk' in self.fields:
+        if 'pk' in fields:
             data['pk'] = model.pk
         return data
+
+    def serialize_list(self, qs, fields=None):
+        fields = fields or self.list_fields
+        data = json.loads(serializers.serialize('json', qs, fields=fields))
+        actual_data = []
+        for model in data:
+            piece = model['fields']
+            if 'id' in fields:
+                piece['id'] = model['pk']
+            if 'pk' in fields:
+                piece['pk'] = model['pk']
+            actual_data.append(piece)
+        return actual_data
 
     def _set_fields_on_model(self, model, values):
         """

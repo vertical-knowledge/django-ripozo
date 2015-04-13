@@ -11,7 +11,7 @@ from django.db.models.manager import Manager
 
 from django_ripozo.manager import DjangoManager
 
-from django_ripozo_tests.helpers.common import UnittestBase
+from django_ripozo_tests.helpers.common import UnittestBase, profileit
 
 from ripozo.exceptions import NotFoundException
 from ripozo.viewsets.fields.common import StringField, BooleanField, FloatField, DateTimeField, IntegerField
@@ -153,6 +153,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         """
         self.assertRaises(NotFoundException, self.manager().retrieve, dict(id=1040230))
 
+    @profileit
     def test_retrieve_all(self):
         """
         Tests the retrieval of all available objects.
@@ -169,6 +170,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         vals, meta = self.manager().retrieve_list({})
         self.assertEqual(len(vals), original_length + new_count)
 
+    @profileit
     def test_pagination(self):
         """
         Test retrieve_list with pagination.
@@ -194,12 +196,27 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
             self.assertLessEqual(len(vals), NewManager.paginate_by)
         self.assertEqual(original_length + new_count, total_retrieved)
 
+    @profileit
     def test_list_fields_retrieve_all(self):
         """
         Checks to ensure that the list fields are used if
         they are available.
         """
-        assert False
+        class ListManager(self.manager):
+            _list_fields = ['id']
+
+        vals, meta = self.manager().retrieve_list({})
+        original_length = len(vals)
+
+        new_count = 100
+        for i in range(new_count):
+            self.create_model()
+        vals, meta = ListManager().retrieve_list({})
+        self.assertEqual(len(vals), original_length + new_count)
+
+        for v in vals:
+            self.assertEqual(len(v), 1)
+            self.assertIn('id', v)
 
     def test_update(self):
         """
