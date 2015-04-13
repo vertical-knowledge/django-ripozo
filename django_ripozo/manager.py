@@ -7,16 +7,18 @@ from datetime import datetime, date, time, timedelta
 
 from decimal import Decimal
 
-from django.core import serializers
 from django.db import models
+from django.db.models.query import QuerySet
 
 from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.common import BaseField, StringField, \
     BooleanField, FloatField, DateTimeField, IntegerField
 
-import json
+import logging
 import six
+
+logger = logging.getLogger(__name__)
 
 
 def sql_to_json_encoder(obj):
@@ -135,7 +137,7 @@ class DjangoManager(BaseManager):
         if next_page:
             links.update(dict(next={self.pagination_count_query_arg: count, self.pagination_pk_query_arg: next_page}))
 
-        props = self.serialize_list(queryset, fields=self.list_fields)
+        props = self.serialize_model(queryset, fields=self.list_fields)
         return props, dict(links=links)
 
     def update(self, lookup_keys, updates, *args, **kwargs):
@@ -185,24 +187,23 @@ class DjangoManager(BaseManager):
 
     def serialize_model(self, model, fields=None):
         """
-        :param model: The model that is being serialized.
+        :param model: The model or queryset that is being serialized.
         :type model: django.db.models.Model
         :param list fields: The list of fields to include in the serialization
         :return: The serialized model
         :rtype: dict
         """
         fields = fields or self.fields
+        if isinstance(model, QuerySet):
+            response = []
+            for m in model:
+                response.append(self.serialize_model(m, fields))
+            return response
+
         response = {}
         for f in fields:
             response[f] = getattr(model, f)
         return sql_to_json_encoder(response)
-
-    def serialize_list(self, qs, fields=None):
-        fields = fields or self.list_fields
-        response = []
-        for m in qs:
-            response.append(self.serialize_model(m, fields))
-        return response
 
     def _set_fields_on_model(self, model, values):
         """
