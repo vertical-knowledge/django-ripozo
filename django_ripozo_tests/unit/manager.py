@@ -54,8 +54,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         for key, value in six.iteritems(d1):
             response_value = d2[key]
             if isinstance(value, datetime):
-                value = value.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-                response_value = response_value.strip('Z')
+                value = six.text_type(value)
             elif isinstance(value, time):
                 value = value.strftime('%H:%M:%S')
             elif isinstance(value, date):
@@ -85,7 +84,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
             csi=random_string(),
             date_a=date.today(),
             datetime_a=datetime.utcnow(),
-            decimal_a='1.02',
+            decimal_a=1.02,
             # duration=datetime.now(),
             email=random_string(),
             float_a=1.02,
@@ -229,7 +228,7 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         for key, val in six.iteritems(new_vals):
             model_val = getattr(model, key)
             if isinstance(model_val, Decimal):
-                model_val = six.text_type(model_val)
+                model_val = float(model_val)
             self.assertEqual(model_val, val)
 
     def test_update_not_existing(self):

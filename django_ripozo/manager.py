@@ -3,6 +3,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from datetime import datetime, date, time, timedelta
+
+from decimal import Decimal
+
 from django.core import serializers
 from django.db import models
 
@@ -13,6 +17,23 @@ from ripozo.viewsets.fields.common import BaseField, StringField, \
 
 import json
 import six
+
+
+def sql_to_json_encoder(obj):
+    # TODO docs and test
+    if isinstance(obj, dict):
+        for key, value in six.iteritems(obj):
+            obj[key] = sql_to_json_encoder(value)
+    elif isinstance(obj, list):
+        values = []
+        for val in obj:
+            values.append(sql_to_json_encoder(val))
+        obj = values
+    elif isinstance(obj, (datetime, date, time, timedelta)):
+        obj = six.text_type(obj)
+    elif isinstance(obj, Decimal):
+        obj = float(obj)
+    return obj
 
 
 class DjangoManager(BaseManager):
@@ -171,26 +192,17 @@ class DjangoManager(BaseManager):
         :rtype: dict
         """
         fields = fields or self.fields
-        data = serializers.serialize('json', [model], fields=fields)
-        data = json.loads(data)[0]['fields']
-        if 'id' in fields:
-            data['id'] = model.id
-        if 'pk' in fields:
-            data['pk'] = model.pk
-        return data
+        response = {}
+        for f in fields:
+            response[f] = getattr(model, f)
+        return sql_to_json_encoder(response)
 
     def serialize_list(self, qs, fields=None):
         fields = fields or self.list_fields
-        data = json.loads(serializers.serialize('json', qs, fields=fields))
-        actual_data = []
-        for model in data:
-            piece = model['fields']
-            if 'id' in fields:
-                piece['id'] = model['pk']
-            if 'pk' in fields:
-                piece['pk'] = model['pk']
-            actual_data.append(piece)
-        return actual_data
+        response = []
+        for m in qs:
+            response.append(self.serialize_model(m, fields))
+        return response
 
     def _set_fields_on_model(self, model, values):
         """
