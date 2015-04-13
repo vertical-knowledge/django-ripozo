@@ -27,12 +27,6 @@ class DjangoDispatcher(DispatcherBase):
         self._base_url = base_url
 
     @property
-    def routers(self):
-        if self._routers is None:
-            self._routers = {}
-        return self._routers
-
-    @property
     def url_map(self):
         if self._url_map is None:
             self._url_map = {}
@@ -93,6 +87,7 @@ class DjangoDispatcher(DispatcherBase):
         route = route.lstrip('/')
         return '^{0}$'.format(route)
 
+
 class DjangoRequestContainer(RequestContainer):
     def __init__(self, request, *args, **kwargs):
         self.django_request = request
@@ -117,7 +112,7 @@ class MethodRouter(object):
     def __call__(self, django_request, **url_parameters):
         try:
             endpoint_func = self.get_func_for_method(django_request.method)
-        except MethodNotAllowed as e:
+        except MethodNotAllowed:
             return HttpResponseNotAllowed(six.iterkeys(self.method_map))
         request = DjangoRequestContainer(django_request, url_params=url_parameters,
                                          query_args=django_request.GET, body_args=django_request.POST,

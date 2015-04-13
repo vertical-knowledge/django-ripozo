@@ -20,17 +20,6 @@ class TestDispatcher(UnittestBase, unittest.TestCase):
         d = DjangoDispatcher(base_url='base')
         self.assertEqual(d.base_url, 'base')
 
-    def test_routers_property(self):
-        """
-        Tests the routers property
-        """
-        self.assertIsNone(DjangoDispatcher._routers)
-        d = DjangoDispatcher()
-        self.assertEqual(d.routers, {})
-        d.routers['key'] = 'value'
-        self.assertDictEqual(d.routers, {'key': 'value'})
-        self.assertIsNone(DjangoDispatcher._routers)
-
     def test_url_map_property(self):
         """
         Tests the url_map property
