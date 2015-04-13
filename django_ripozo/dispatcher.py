@@ -11,6 +11,7 @@ from django_ripozo.exceptions import MethodNotAllowed
 
 from ripozo.dispatch.dispatch_base import DispatcherBase
 from ripozo.viewsets.request import RequestContainer
+from ripozo.utilities import join_url_parts
 
 import re
 import six
@@ -63,6 +64,7 @@ class DjangoDispatcher(DispatcherBase):
         :param list methods: The http verbs that correspond to this endpoint
         :param dict options: Additional options.  Not used at this time
         """
+        route = join_url_parts(self.base_url, route)
         route = self._convert_url_to_regex(route)
         if route not in self.url_map:
             self.url_map[route] = MethodRouter(route, self)
@@ -82,7 +84,7 @@ class DjangoDispatcher(DispatcherBase):
         urls = []
         for router in six.itervalues(self.url_map):
             urls.append(url(router.route, router))
-        return patterns(self.base_url, *urls)
+        return patterns('', *urls)
 
 
     @staticmethod

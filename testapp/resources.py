@@ -11,10 +11,14 @@ class HelloResource(ResourceBase):
     _resource_name = 'myresource'
 
     @apimethod(methods=['GET'])
-    def say_hello(cls):
+    def say_hello(cls, request, *args, **kwargs):
         return cls(properties=dict(hello='world'))
 
 
-class HelloWorldIdResource(HelloResource):
+class HelloWorldIdResource(ResourceBase):
     _resource_name = 'myidresource'
     _pks = ['id']
+
+    @apimethod(methods=['GET'])
+    def say_hello(cls, request, *args, **kwargs):
+        return cls(properties=dict(hello='world', id=request.url_params['id']))
