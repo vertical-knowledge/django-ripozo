@@ -237,6 +237,20 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         """
         self.assertRaises(NotFoundException, self.manager().update, {'id': -1}, {'hehe': 1})
 
+    def test_update_wrong_fields(self):
+        """
+        Tests updating a field that is not in the fields list
+        """
+        lookup, vals = self.create_model()
+        vals.update(lookup)
+        response = self.manager().update(lookup, {'notreal': 1})
+        model = self.manager().get_model(lookup)
+        for key, val in six.iteritems(vals):
+            model_val = getattr(model, key)
+            if isinstance(model_val, Decimal):
+                model_val = float(model_val)
+            self.assertEqual(model_val, val)
+
     def test_delete(self):
         """
         Tests simple delete
