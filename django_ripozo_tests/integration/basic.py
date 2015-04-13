@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 class TestBasic(UnittestBase, unittest.TestCase):
     def setUp(self):
-
         self.client = Client()
 
     def test_list_url(self):
@@ -30,6 +29,6 @@ class TestBasic(UnittestBase, unittest.TestCase):
         response = self.client.get('/api/myidresource/1/')
         self.assertEqual(response.status_code, 200)
         content = six.text_type(response.content)
-        logger.debug(content)
+        print(content)
         data = json.loads(content)
         self.assertDictEqual(data['properties'], dict(hello='world', id='1'))
