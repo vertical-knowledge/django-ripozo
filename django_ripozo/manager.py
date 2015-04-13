@@ -91,6 +91,7 @@ class DjangoManager(BaseManager):
             defaults
         :rtype: dict
         """
+        logger.info('Creating model {0} with values {1}'.format(self.model.__name__, values))
         model = self.model()
         model = self._set_fields_on_model(model, values)
         model.save()
@@ -107,6 +108,8 @@ class DjangoManager(BaseManager):
             the fields specified in the manager.
         :rtype: dict
         """
+        logger.info('Retrieving an individual model {0} with lookup '
+                    'keys {1}'.format(self.model.__name__, lookup_keys))
         model = self.get_model(lookup_keys)
         return self.serialize_model(model)
 
@@ -118,6 +121,8 @@ class DjangoManager(BaseManager):
         :return:
         :rtype:
         """
+        logger.info('Retrieving list of {0} with filters '
+                    '{1}'.format(self.model.__name__, filters))
         count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
         page = filters.pop(self.pagination_pk_query_arg, 0)
 
@@ -151,6 +156,8 @@ class DjangoManager(BaseManager):
         :rtype: dict
         :raises: NotFoundException
         """
+        logger.info('Updating model {0} with lookup keys {1}: values = '
+                    '{2}'.format(self.model.__name__, lookup_keys, updates))
         model = self.get_model(lookup_keys)
         for key, value in six.iteritems(updates):
             if key not in self.fields:
@@ -166,6 +173,8 @@ class DjangoManager(BaseManager):
         :param dict okup_keys:
         :return: Empty dict
         """
+        logger.info('Attempting to delete model {0} with lookup keys '
+                    '{1}'.format(self.model.__name__, lookup_keys))
         model = self.get_model(lookup_keys)
         model.delete()
 
@@ -181,7 +190,7 @@ class DjangoManager(BaseManager):
         """
         try:
             return self.queryset.filter(**lookup_keys).get()
-        except self.model.DoesNotExist as e:
+        except self.model.DoesNotExist:
             raise NotFoundException('No model of type {0} could be found using'
                                     ' lookup keys {1}'.format(self.model.__name__, lookup_keys))
 
