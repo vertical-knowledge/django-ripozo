@@ -14,28 +14,12 @@ from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.common import BaseField, StringField, \
     BooleanField, FloatField, DateTimeField, IntegerField
+from ripozo.utilities import make_json_safe
 
 import logging
 import six
 
 logger = logging.getLogger(__name__)
-
-
-def sql_to_json_encoder(obj):
-    # TODO docs and test
-    if isinstance(obj, dict):
-        for key, value in six.iteritems(obj):
-            obj[key] = sql_to_json_encoder(value)
-    elif isinstance(obj, list):
-        values = []
-        for val in obj:
-            values.append(sql_to_json_encoder(val))
-        obj = values
-    elif isinstance(obj, (datetime, date, time, timedelta)):
-        obj = six.text_type(obj)
-    elif isinstance(obj, Decimal):
-        obj = float(obj)
-    return obj
 
 
 class DjangoManager(BaseManager):
@@ -212,7 +196,7 @@ class DjangoManager(BaseManager):
         response = {}
         for f in fields:
             response[f] = getattr(model, f)
-        return sql_to_json_encoder(response)
+        return make_json_safe(response)
 
     def _set_fields_on_model(self, model, values):
         """
