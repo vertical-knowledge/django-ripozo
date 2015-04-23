@@ -8,12 +8,12 @@ __pkg_name__ = 'django-version'
 
 from setuptools import setup, find_packages
 
-version = '0.1.0'
+version = '0.1.1'
 
 setup(
     author=__author__,
     author_email='tim.martin@vertical-knowledge.com',
-    name='django-version',
+    name='django-ripozo',
     version=version,
     packages=find_packages(include=['django_ripozo', 'django_ripozo.*']),
     include_package_data=True,
