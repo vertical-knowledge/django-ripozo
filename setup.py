@@ -19,7 +19,6 @@ setup(
     include_package_data=True,
     description=('Integrates ripozo with django for fast, '
                  'flexible Hypermedia, HATEOAS, and other REST apis'),
-    # long_description=long_description,
     install_requires=[
         'ripozo',
         'Django>=1.4',
