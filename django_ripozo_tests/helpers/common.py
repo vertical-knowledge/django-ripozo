@@ -9,7 +9,9 @@ from ripozo_tests.python2base import TestBase
 
 import cProfile
 import django
+import random
 import pstats
+import string
 
 
 def profileit(func):
@@ -34,6 +36,11 @@ def profileit(func):
         return retval
 
     return wrapper
+
+
+def random_string(length=50):
+    return ''.join(random.choice(string.ascii_letters) for _ in range(length))
+
 
 class UnittestBase(TestBase):
     @classmethod

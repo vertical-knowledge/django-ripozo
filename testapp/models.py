@@ -24,3 +24,18 @@ class MyModel(models.Model):
     smallint = models.SmallIntegerField()
     time_a = models.TimeField()
     url = models.URLField()
+
+
+class OneToMany(models.Model):
+    """
+    This one model has many ManyToOne models.
+    """
+    one_value = models.CharField(max_length=63)
+
+
+class ManyToOne(models.Model):
+    """
+    Many of this model have one OneToMany models
+    """
+    one = models.ForeignKey('OneToMany', related_name='manies')
+    many_value = models.CharField(max_length=63)

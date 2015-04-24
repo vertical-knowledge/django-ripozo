@@ -3,12 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import datetime, date, time, timedelta
-
-from decimal import Decimal
-
 from django.db import models
 from django.db.models.query import QuerySet
+from django.db.models.manager import Manager
 
 from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
@@ -187,16 +184,31 @@ class DjangoManager(BaseManager):
         :rtype: dict
         """
         fields = fields or self.fields
-        if isinstance(model, QuerySet):
-            response = []
-            for m in model:
-                response.append(self.serialize_model(m, fields))
-            return response
-
-        response = {}
-        for f in fields:
-            response[f] = getattr(model, f)
+        field_dict = self.dot_field_list_to_dict(fields=fields)
+        response = self._serialize_model_helper(model, field_dict=field_dict)
         return make_json_safe(response)
+
+    def _serialize_model_helper(self, model, field_dict=None):
+        # TODO docs
+        if model is None:
+            return None
+
+        if isinstance(model, Manager):
+            model = model.all()
+
+        if isinstance(model, (QuerySet,)):
+            model_list = []
+            for m in model:
+                model_list.append(self._serialize_model_helper(m, field_dict=field_dict))
+            return model_list
+
+        model_dict = {}
+        for name, sub in six.iteritems(field_dict):
+            value = getattr(model, name)
+            if sub:
+                value = self._serialize_model_helper(value, field_dict=sub)
+            model_dict[name] = value
+        return model_dict
 
     def _set_fields_on_model(self, model, values):
         """
