@@ -25,6 +25,7 @@ class DjangoManager(BaseManager):
         is responsible for handling
     :type model: django.db.models.Model
     """
+    pagination_pk_query_arg = 'page'
 
     @property
     def queryset(self):
@@ -105,7 +106,8 @@ class DjangoManager(BaseManager):
         logger.info('Retrieving list of {0} with filters '
                     '{1}'.format(self.model.__name__, filters))
         count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
-        page = filters.pop(self.pagination_pk_query_arg, 0)
+        page = filters.pop(self.pagination_pk_query_arg, 1)
+        page -= 1  # Pages shouldn't be zero-indexed
 
         offset = page * count
         total = self.queryset.filter(**filters).count()
@@ -113,10 +115,12 @@ class DjangoManager(BaseManager):
 
         prev_page = None
         next_page = None
+
+        # Weird additions due to how it's actually exposed.
         if total > offset + count:
-            next_page = page + 1
+            next_page = page + 2
         if page > 0:
-            prev_page = page - 1
+            prev_page = page
         links = dict()
         if prev_page:
             links.update(dict(prev={self.pagination_count_query_arg: count, self.pagination_pk_query_arg: prev_page}))
