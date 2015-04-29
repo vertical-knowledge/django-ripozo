@@ -6,14 +6,15 @@ python:
   - "pypy"
   - "pypy3"
 env:
-  - DJANGO_VERSION="Django<1.9"
-  - DJANGO_VERSION="Django<1.8"
-  - DJANGO_VERSION="Django<1.7"
-  - DJANGO_VERSION="Django<1.6"
+  - DJANGO_VERSION="Django<1.9" RIPOZO="-U ripozo"
+  - DJANGO_VERSION="Django<1.8" RIPOZO="-U ripozo"
+  - DJANGO_VERSION="Django<1.7" RIPOZO="-U ripozo"
+  - DJANGO_VERSION="Django<1.6" RIPOZO="-U ripozo"
   - DJANGO_VERSION="Django<1.9" RIPOZO="git+git://github.com/vertical-knowledge/ripozo.git@master"
 install:
   - pip install coveralls
   - pip install --pre $DJANGO_VERSION
+  - pip install $RIPOZO
   - python setup.py -q install
 script:
   coverage run --source=django_ripozo setup.py test
