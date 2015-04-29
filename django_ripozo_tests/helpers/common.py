@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from django.core.management import call_command
 
-from ripozo_tests.python2base import TestBase
+from ripozo.tests.python2base import TestBase
 
 import cProfile
 import django
