@@ -165,12 +165,12 @@ class MethodRouter(object):
         request = DjangoRequestContainer(django_request, url_params=url_parameters,
                                          query_args=django_request.GET, body_args=django_request.POST,
                                          headers=django_request.META)
-        adapter = self.dispatcher.dispatch(endpoint_func, request.content_type, request)
+        accepted_mimetypes = django_request.META.get('HTTP_ACCEPT', [])
+        adapter = self.dispatcher.dispatch(endpoint_func, accepted_mimetypes, request)
         response = HttpResponse(adapter.formatted_body)
         for header, value in six.iteritems(adapter.extra_headers):
             response[header] = value
         return response
-
 
     @property
     def method_map(self):

@@ -14,10 +14,12 @@ from django_ripozo.manager import DjangoManager
 from django_ripozo_tests.helpers.common import UnittestBase, profileit
 
 from ripozo.exceptions import NotFoundException
-from ripozo.viewsets.fields.common import StringField, BooleanField, FloatField, DateTimeField, IntegerField
+from ripozo.viewsets.fields.common import StringField, BooleanField, FloatField, \
+    DateTimeField, IntegerField, BaseField
 
 from testapp.models import MyModel
 
+import mock
 import random
 import string
 import six
@@ -265,3 +267,23 @@ class TestDjangoManager(UnittestBase, unittest.TestCase):
         does not exist.
         """
         self.assertRaises(NotFoundException, self.manager().delete, {'id': -1})
+
+    def test_serialize_model_helper_none(self):
+        """
+        Tests that the _serialize_model_helper
+        returns None if the model is None.
+        """
+        manager = self.manager()
+        self.assertIsNone(manager._serialize_model_helper(None))
+
+    def test_get_field_type_not_found(self):
+        """
+        Tests that a BaseField is returned if the
+        model could not be found.
+        """
+        mck = mock.MagicMock()
+
+        class FakeManager(DjangoManager):
+            model = mck
+
+        self.assertIsInstance(FakeManager().get_field_type('blah'), BaseField)
