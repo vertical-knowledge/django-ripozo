@@ -5,8 +5,6 @@ from __future__ import unicode_literals
 
 from django.core.management import call_command
 
-from ripozo.tests.python2base import TestBase
-
 import cProfile
 import django
 import random
@@ -42,7 +40,7 @@ def random_string(length=50):
     return ''.join(random.choice(string.ascii_letters) for _ in range(length))
 
 
-class UnittestBase(TestBase):
+class UnittestBase(object):
     @classmethod
     def setUpClass(cls):
         try:

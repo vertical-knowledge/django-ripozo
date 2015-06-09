@@ -42,7 +42,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     tests_require=[
-        'mock'
+        'mock',
+        'unittest2'
     ],
     test_suite='django_ripozo_tests'
 )

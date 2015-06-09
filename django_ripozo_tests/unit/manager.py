@@ -23,7 +23,7 @@ import mock
 import random
 import string
 import six
-import unittest
+import unittest2
 
 
 def random_string():
@@ -38,7 +38,7 @@ def random_bool():
     return random.choice([True, False])
 
 
-class TestDjangoManager(UnittestBase, unittest.TestCase):
+class TestDjangoManager(UnittestBase, unittest2.TestCase):
     def setUp(self):
         class MyMangaer(DjangoManager):
             model = MyModel

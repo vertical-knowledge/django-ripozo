@@ -10,12 +10,12 @@ from django_ripozo_tests.helpers.common import UnittestBase
 import json
 import logging
 import six
-import unittest
+import unittest2
 
 logger = logging.getLogger(__name__)
 
 
-class TestBasic(UnittestBase, unittest.TestCase):
+class TestBasic(UnittestBase, unittest2.TestCase):
     def setUp(self):
         self.client = Client()
 

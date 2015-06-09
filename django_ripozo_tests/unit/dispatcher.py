@@ -7,10 +7,10 @@ from django_ripozo.dispatcher import DjangoDispatcher, MethodRouter
 
 from django_ripozo_tests.helpers.common import UnittestBase
 
-import unittest
+import unittest2
 
 
-class TestDispatcher(UnittestBase, unittest.TestCase):
+class TestDispatcher(UnittestBase, unittest2.TestCase):
     def test_base_url(self):
         """
         Tests the base_url property

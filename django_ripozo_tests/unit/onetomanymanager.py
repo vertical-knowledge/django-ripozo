@@ -9,10 +9,10 @@ from django_ripozo_tests.helpers.common import UnittestBase, random_string
 
 from testapp.models import OneToMany, ManyToOne
 
-import unittest
+import unittest2
 
 
-class TestDjangoManager(UnittestBase, unittest.TestCase):
+class TestDjangoManager(UnittestBase, unittest2.TestCase):
     def setUp(self):
         class OneManager(DjangoManager):
             model = OneToMany
