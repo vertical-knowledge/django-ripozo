@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from django_ripozo.dispatcher import DjangoDispatcher
 
-from ripozo.dispatch.adapters import SirenAdapter, HalAdapter
+from ripozo.adapters import SirenAdapter, HalAdapter
 
 from testapp.resources import HelloResource, HelloWorldIdResource
 
