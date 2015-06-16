@@ -67,3 +67,6 @@ target/
 .pypirc
 
 setup.cfg
+
+# SQLite files
+*.sqlite3
