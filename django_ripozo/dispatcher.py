@@ -4,13 +4,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 __author__ = 'Tim Martin'
 
-from django.http import HttpResponseNotAllowed, HttpResponse
-from django.conf.urls import patterns, url
+from django.http import HttpResponseNotAllowed, HttpResponse, QueryDict
+from django.conf.urls import url
+from django.views.decorators.csrf import csrf_exempt
 
 from django_ripozo.exceptions import MethodNotAllowed
 
 from ripozo.dispatch.dispatch_base import DispatcherBase
-from ripozo.viewsets.request import RequestContainer
+from ripozo.exceptions import RestException
+from ripozo.resources.request import RequestContainer
 from ripozo.utilities import join_url_parts
 
 import re
@@ -86,7 +88,6 @@ class DjangoDispatcher(DispatcherBase):
             urls.append(url(router.route, router))
         return urls
 
-
     @staticmethod
     def _convert_url_to_regex(route):
         """
@@ -108,6 +109,32 @@ class DjangoDispatcher(DispatcherBase):
         route = route.lstrip('/')
         return '^{0}$'.format(route)
 
+    def dispatch(self, endpoint_func, accepted_mimetypes, *args, **kwargs):
+        """
+        A helper to dispatch the endpoint_func, get the ResourceBase
+        subclass instance, get the appropriate AdapterBase subclass
+        and return an instance created with the ResourceBase.
+
+        :param method endpoint_func: The endpoint_func is responsible
+            for actually get the ResourceBase response
+        :param list accepted_mimetypes: The mime types accepted by
+            the client.  If none of the mimetypes provided are
+            available the default adapter will be used.
+        :param list args: a list of args that wll be passed
+            to the endpoint_func
+        :param dict kwargs: a dictionary of keyword args to
+            pass to the endpoint_func
+        :return: an instance of an AdapterBase subclass that
+            can be used to find
+        :rtype:
+        """
+        result = endpoint_func(*args, **kwargs)
+        request = args[0]
+        base_url = request.django_request.build_absolute_uri(self.base_url)
+        adapter_class = self.get_adapter_for_type(accepted_mimetypes)
+        adapter = adapter_class(result, base_url=base_url)
+        return adapter
+
 
 class DjangoRequestContainer(RequestContainer):
     def __init__(self, request, *args, **kwargs):
@@ -125,8 +152,9 @@ class MethodRouter(object):
     """
     _method_map = None
 
-    def __init__(self, route, dispatcher):
+    def __init__(self, route, dispatcher, csrf_exempt=True):
         self.route = route
+        self.csrf_exempt = csrf_exempt
         self.dispatcher = dispatcher
 
     def add_route(self, endpoint_func=None, endpoint=None, methods=None, **options):
@@ -148,6 +176,7 @@ class MethodRouter(object):
                                  '{1}'.format(method, self.route))
             self.method_map[method.lower()] = endpoint_func
 
+    @csrf_exempt
     def __call__(self, django_request, **url_parameters):
         """
         This is a call to a django method.
@@ -162,11 +191,17 @@ class MethodRouter(object):
             endpoint_func = self.get_func_for_method(django_request.method)
         except MethodNotAllowed:
             return HttpResponseNotAllowed(six.iterkeys(self.method_map))
+        body_parameters = QueryDict(django_request.body)
         request = DjangoRequestContainer(django_request, url_params=url_parameters,
-                                         query_args=django_request.GET, body_args=django_request.POST,
-                                         headers=django_request.META)
+                                         query_args=dict(django_request.GET), body_args=dict(body_parameters),
+                                         headers=dict(django_request.META))
         accepted_mimetypes = django_request.META.get('HTTP_ACCEPT', [])
-        adapter = self.dispatcher.dispatch(endpoint_func, accepted_mimetypes, request)
+        try:
+            adapter = self.dispatcher.dispatch(endpoint_func, accepted_mimetypes, request)
+        except RestException, e:
+            adapter_class = self.dispatcher.get_adapter_for_type(accepted_mimetypes)
+            body, content_type, status_code = adapter_class.format_exception(e)
+            return HttpResponse(body, status=status_code, content_type=content_type)
         response = HttpResponse(adapter.formatted_body)
         for header, value in six.iteritems(adapter.extra_headers):
             response[header] = value

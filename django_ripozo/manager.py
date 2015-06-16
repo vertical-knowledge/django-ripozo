@@ -6,10 +6,11 @@ from __future__ import unicode_literals
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models.manager import Manager
+from django.db.models.fields.related import ForeignObjectRel, ForeignKey
 
 from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
-from ripozo.viewsets.fields.common import BaseField, StringField, \
+from ripozo.resources.fields.common import BaseField, StringField, \
     BooleanField, FloatField, DateTimeField, IntegerField
 from ripozo.utilities import make_json_safe
 
@@ -36,7 +37,29 @@ class DjangoManager(BaseManager):
         """
         return self.model.objects
 
-    def get_field_type(self, name):
+    @staticmethod
+    def _get_field_python_type(model, name):
+        """
+        Gets the python type for the attribute on the model
+        with the name provided.
+
+        :param Model model: The Django model class.
+        :param unicode name: The column name on the model
+            that you are attempting to get the python type.
+        :return: The python type of the column
+        :rtype: type
+        """
+        parts = name.split('.')
+        for m in parts:
+            if isinstance(model, ForeignKey):
+                model = model.related_model
+            if isinstance(model, ForeignObjectRel):
+                model = model.model
+            model = model._meta.get_field_by_name(m)[0]
+        return model
+
+    @classmethod
+    def get_field_type(cls, name):
         """
         :param unicode name: The name of the field to get the
             ripozo field type from.
@@ -44,7 +67,7 @@ class DjangoManager(BaseManager):
             matches the database type.
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
-        column = self.model._meta.get_field_by_name(name)[0]
+        column = cls._get_field_python_type(cls.model, name)
         if isinstance(column, (models.IntegerField, models.AutoField)):
             return IntegerField(name)
         elif isinstance(column, (models.CharField, models.GenericIPAddressField,

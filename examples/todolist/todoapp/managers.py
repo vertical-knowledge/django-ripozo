@@ -9,6 +9,6 @@ class TaskBoardManager(DjangoManager):
     paginate_by = 10
 
 class TaskManager(DjangoManager):
-    fields = ('id', 'title', 'description', 'completed', 'task_board.id',)
+    fields = ('id', 'title', 'description', 'completed', 'task_board_id',)
     model = Task
     paginate_by = 20

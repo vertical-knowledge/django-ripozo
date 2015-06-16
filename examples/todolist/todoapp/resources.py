@@ -1,4 +1,4 @@
-from ripozo import restmixins, ListRelationship, Relationship
+from ripozo import restmixins, ListRelationship, Relationship, apimethod
 from .managers import TaskBoardManager, TaskManager
 
 class TaskBoardResource(restmixins.CRUDL):
@@ -23,5 +23,5 @@ class TaskResource(restmixins.CRUD):
     resource_name = 'task'
     pks = ('id',)
     _relationships = (
-        Relationship('task_board', relation='TaskBoardResource'),
+        Relationship('task_board', property_map=dict(task_board_id='id'), relation='TaskBoardResource'),
     )

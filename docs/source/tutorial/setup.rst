@@ -58,7 +58,7 @@ file and add the following models.
         title = models.CharField(max_length=50)
         description = models.TextField()
         completed = models.BooleanField(default=False)
-        task_board = models.ForeignKey('TaskBoard')
+        task_board = models.ForeignKey('TaskBoard', related_name='task_set')
 
 You'll need to run makemigrations and migrate again.
 
@@ -86,7 +86,7 @@ we are going to set up our managers.
         paginate_by = 10
 
     class TaskManager(DjangoManager):
-        fields = ('id', 'title', 'description', 'completed', 'task_board.id',)
+        fields = ('id', 'title', 'description', 'completed', 'task_board_id',)
         model = Task
         paginate_by = 20
 
@@ -106,7 +106,7 @@ directory called ``resources.py``.  Then we will add the following
 
 .. code-block:: python
 
-    from ripozo import restmixins, ListRelationship, Relationship
+    from ripozo import restmixins, ListRelationship, Relationship, apimethod
     from .managers import TaskBoardManager, TaskManager
 
     class TaskBoardResource(restmixins.CRUDL):
@@ -131,8 +131,9 @@ directory called ``resources.py``.  Then we will add the following
         resource_name = 'task'
         pks = ('id',)
         _relationships = (
-            Relationship('task_board', relation='TaskBoardResource'),
+            Relationship('task_board', property_map=dict(task_board_id='id'), relation='TaskBoardResource'),
         )
+
 
 
 We now have a reusable core to our RESTful API.  This is reusable across
@@ -155,7 +156,7 @@ in your todoapp directory.  In that file:
     from ripozo.adapters import SirenAdapter, HalAdapter
     from .resources import TaskBoardResource, TaskResource
 
-    dispatcher = DjangoDispatcher()
+    dispatcher = DjangoDispatcher(base_url='/api')
     dispatcher.register_resources(TaskBoardResource, TaskResource)
     dispatcher.register_adapters(SirenAdapter, HalAdapter)
 
