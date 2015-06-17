@@ -237,7 +237,7 @@ And we can get the board this task belonds to by getting the task_board entity
 
     >>> parent_board = next(task.get_entities('task_board'))
     >>> print(parent_board.title)
-    My Updated Board
+    'My Updated Board'
 
 That task is dumb.  Let's delete it.
 

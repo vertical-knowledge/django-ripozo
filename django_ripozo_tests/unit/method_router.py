@@ -10,6 +10,8 @@ from django_ripozo.exceptions import MethodNotAllowed
 
 from django_ripozo_tests.helpers.common import UnittestBase
 
+from ripozo.exceptions import RestException
+
 import mock
 import unittest2
 
@@ -75,7 +77,6 @@ class TestDispatcher(UnittestBase, unittest2.TestCase):
         self.assertIsInstance(resp, HttpResponse)
         self.assertIsInstance(resp, HttpResponse)
         self.assertEqual(dispatcher.dispatch.call_count, 2)
-
 
     def test_method_map_property(self):
         """

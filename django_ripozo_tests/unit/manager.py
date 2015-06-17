@@ -14,7 +14,7 @@ from django_ripozo.manager import DjangoManager
 from django_ripozo_tests.helpers.common import UnittestBase, profileit
 
 from ripozo.exceptions import NotFoundException
-from ripozo.viewsets.fields.common import StringField, BooleanField, FloatField, \
+from ripozo.resources.fields.common import StringField, BooleanField, FloatField, \
     DateTimeField, IntegerField, BaseField
 
 from testapp.models import MyModel

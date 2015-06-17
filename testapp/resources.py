@@ -4,11 +4,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ripozo.decorators import apimethod
-from ripozo.viewsets.resource_base import ResourceBase
+from ripozo.resources.resource_base import ResourceBase
 
 
 class HelloResource(ResourceBase):
-    _resource_name = 'myresource'
+    resource_name = 'myresource'
 
     @apimethod(methods=['GET'])
     def say_hello(cls, request, *args, **kwargs):
@@ -16,8 +16,8 @@ class HelloResource(ResourceBase):
 
 
 class HelloWorldIdResource(ResourceBase):
-    _resource_name = 'myidresource'
-    _pks = ['id']
+    resource_name = 'myidresource'
+    pks = ['id']
 
     @apimethod(methods=['GET'])
     def say_hello(cls, request, *args, **kwargs):

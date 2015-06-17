@@ -18,6 +18,94 @@ from ripozo.utilities import join_url_parts
 import re
 import six
 
+
+class MethodRouter(object):
+    """
+    This is a callable object that is responsible
+    for calling the specific method responsible for
+    handling the http verb that was used.  This is because
+    Django does not have a manner of directing different
+    HTTP verbs to different methods.
+    """
+    _method_map = None
+
+    def __init__(self, route, dispatcher):
+        self.route = route
+        self.dispatcher = dispatcher
+
+    def add_route(self, endpoint_func=None, endpoint=None, methods=None, **options):
+        """
+        Adds a function to call and the http methods that will
+        correspond to it.  Currently, the endpoint and options are ignored.
+
+        :param function endpoint_func: The function to be called when the route
+            is called with one of the methods specified.
+        :param unicode endpoint: Not used currently
+        :param list methods: A list of the unicode methods that
+            correspond to the endpoint_func.  They are case insensitive.
+        :param dict options: Not used currently.
+        """
+        for method in methods:
+            method = method.lower()
+            if method in self.method_map:
+                raise ValueError('The method {0} is already registered for the route '
+                                 '{1}'.format(method, self.route))
+            self.method_map[method.lower()] = endpoint_func
+
+    @csrf_exempt
+    def __call__(self, django_request, **url_parameters):
+        """
+        This is a call to a django method.
+
+        :param django.http.HttpRequest django_request: The django
+            request object.
+        :param dict url_parameters: The named url parameters
+        :return: The django HttpResponse
+        :rtype: django.http.HttpResponse
+        """
+        try:
+            endpoint_func = self.get_func_for_method(django_request.method)
+        except MethodNotAllowed:
+            return HttpResponseNotAllowed(six.iterkeys(self.method_map))
+        body_parameters = QueryDict(django_request.body)
+        request = DjangoRequestContainer(django_request, url_params=url_parameters,
+                                         query_args=dict(django_request.GET), body_args=dict(body_parameters),
+                                         headers=dict(django_request.META))
+        accepted_mimetypes = django_request.META.get('HTTP_ACCEPT', [])
+        try:
+            adapter = self.dispatcher.dispatch(endpoint_func, accepted_mimetypes, request)
+        except RestException, e:
+            adapter_class = self.dispatcher.get_adapter_for_type(accepted_mimetypes)
+            body, content_type, status_code = adapter_class.format_exception(e)
+            return HttpResponse(body, status=status_code, content_type=content_type)
+        response = HttpResponse(adapter.formatted_body, status=adapter.status_code)
+        for header, value in six.iteritems(adapter.extra_headers):
+            response[header] = value
+        return response
+
+    @property
+    def method_map(self):
+        """
+        :return: The dictionary of the HTTP methods
+            and their corresponding endpoint functions.
+        :rtype: dict
+        """
+        if self._method_map is None:
+            self._method_map = {}
+        return self._method_map
+
+    def get_func_for_method(self, http_method):
+        """
+        :param unicode http_method: The http verb
+        :return: The method corresponding to the http verb
+        :rtype: types.MethodType
+        """
+        http_method = http_method.lower()
+        if http_method not in self.method_map:
+            raise MethodNotAllowed('The method {0} is not available for '
+                                   'the route {1}'.format(http_method, self.route))
+        return self.method_map[http_method]
+
 _url_parameter_finder = re.compile(r'<(.+?)>')
 
 
@@ -26,8 +114,9 @@ class DjangoDispatcher(DispatcherBase):
     _url_map = None
     _routers = None
 
-    def __init__(self, base_url=''):
+    def __init__(self, base_url='', method_route_class=MethodRouter):
         self._base_url = base_url
+        self.method_route_class = method_route_class
 
     @property
     def url_map(self):
@@ -69,7 +158,7 @@ class DjangoDispatcher(DispatcherBase):
         route = join_url_parts(self.base_url, route)
         route = self._convert_url_to_regex(route)
         if route not in self.url_map:
-            self.url_map[route] = MethodRouter(route, self)
+            self.url_map[route] = self.method_route_class(route, self)
         method_router = self.url_map[route]
         method_router.add_route(endpoint_func=endpoint_func, endpoint=endpoint,
                                 methods=methods, **options)
@@ -140,92 +229,3 @@ class DjangoRequestContainer(RequestContainer):
     def __init__(self, request, *args, **kwargs):
         self.django_request = request
         super(DjangoRequestContainer, self).__init__(*args, **kwargs)
-
-
-class MethodRouter(object):
-    """
-    This is a callable object that is responsible
-    for calling the specific method responsible for
-    handling the http verb that was used.  This is because
-    Django does not have a manner of directing different
-    HTTP verbs to different methods.
-    """
-    _method_map = None
-
-    def __init__(self, route, dispatcher, csrf_exempt=True):
-        self.route = route
-        self.csrf_exempt = csrf_exempt
-        self.dispatcher = dispatcher
-
-    def add_route(self, endpoint_func=None, endpoint=None, methods=None, **options):
-        """
-        Adds a function to call and the http methods that will
-        correspond to it.  Currently, the endpoint and options are ignored.
-
-        :param function endpoint_func: The function to be called when the route
-            is called with one of the methods specified.
-        :param unicode endpoint: Not used currently
-        :param list methods: A list of the unicode methods that
-            correspond to the endpoint_func.  They are case insensitive.
-        :param dict options: Not used currently.
-        """
-        for method in methods:
-            method = method.lower()
-            if method in self.method_map:
-                raise ValueError('The method {0} is already registered for the route '
-                                 '{1}'.format(method, self.route))
-            self.method_map[method.lower()] = endpoint_func
-
-    @csrf_exempt
-    def __call__(self, django_request, **url_parameters):
-        """
-        This is a call to a django method.
-
-        :param django.http.HttpRequest django_request: The django
-            request object.
-        :param dict url_parameters: The named url parameters
-        :return: The django HttpResponse
-        :rtype: django.http.HttpResponse
-        """
-        try:
-            endpoint_func = self.get_func_for_method(django_request.method)
-        except MethodNotAllowed:
-            return HttpResponseNotAllowed(six.iterkeys(self.method_map))
-        body_parameters = QueryDict(django_request.body)
-        request = DjangoRequestContainer(django_request, url_params=url_parameters,
-                                         query_args=dict(django_request.GET), body_args=dict(body_parameters),
-                                         headers=dict(django_request.META))
-        accepted_mimetypes = django_request.META.get('HTTP_ACCEPT', [])
-        try:
-            adapter = self.dispatcher.dispatch(endpoint_func, accepted_mimetypes, request)
-        except RestException, e:
-            adapter_class = self.dispatcher.get_adapter_for_type(accepted_mimetypes)
-            body, content_type, status_code = adapter_class.format_exception(e)
-            return HttpResponse(body, status=status_code, content_type=content_type)
-        response = HttpResponse(adapter.formatted_body)
-        for header, value in six.iteritems(adapter.extra_headers):
-            response[header] = value
-        return response
-
-    @property
-    def method_map(self):
-        """
-        :return: The dictionary of the HTTP methods
-            and their corresponding endpoint functions.
-        :rtype: dict
-        """
-        if self._method_map is None:
-            self._method_map = {}
-        return self._method_map
-
-    def get_func_for_method(self, http_method):
-        """
-        :param unicode http_method: The http verb
-        :return: The method corresponding to the http verb
-        :rtype: types.MethodType
-        """
-        http_method = http_method.lower()
-        if http_method not in self.method_map:
-            raise MethodNotAllowed('The method {0} is not available for '
-                                   'the route {1}'.format(http_method, self.route))
-        return self.method_map[http_method]
