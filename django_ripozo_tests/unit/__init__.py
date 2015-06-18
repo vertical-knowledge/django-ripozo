@@ -5,4 +5,4 @@ from __future__ import unicode_literals
 
 __author__ = 'Tim Martin'
 
-from . import dispatcher, manager, method_router, onetomanymanager
+from . import manager, onetomanymanager, dispatcher, method_router

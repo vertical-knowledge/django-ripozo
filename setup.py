@@ -4,9 +4,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 __author__ = 'Tim Martin'
-__pkg_name__ = 'django-version'
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 version = '0.1.1'
 
@@ -15,8 +14,11 @@ setup(
     author_email='tim.martin@vertical-knowledge.com',
     name='django-ripozo',
     version=version,
-    packages=find_packages(include=['django_ripozo', 'django_ripozo.*']),
-    include_package_data=True,
+    packages=[
+        'django_ripozo',
+        'django_ripozo.migrations'
+    ],
+    # include_package_data=True,
     description=('Integrates ripozo with django for fast, '
                  'flexible Hypermedia, HATEOAS, and other REST apis'),
     install_requires=[
@@ -45,5 +47,6 @@ setup(
         'mock',
         'unittest2'
     ],
-    test_suite='django_ripozo_tests'
+    test_suite='django_ripozo_tests',
+    url='http://django-ripozo.readthedocs.org/'
 )

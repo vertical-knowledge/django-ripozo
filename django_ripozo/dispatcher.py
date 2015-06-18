@@ -6,9 +6,10 @@ __author__ = 'Tim Martin'
 
 from django.http import HttpResponseNotAllowed, HttpResponse, QueryDict
 from django.conf.urls import url
-from django.views.decorators.csrf import csrf_exempt
 
 from django_ripozo.exceptions import MethodNotAllowed
+
+from functools import wraps
 
 from ripozo.dispatch.dispatch_base import DispatcherBase
 from ripozo.exceptions import RestException
@@ -17,6 +18,36 @@ from ripozo.utilities import join_url_parts
 
 import re
 import six
+
+def _csrf_wrapper(f):
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        return f(*args, **kwargs)
+    wrapped.csrf_exempt = True
+    return wrapped
+
+
+def default_error_handler(dispatcher, request, adapter_class, exc):
+    """
+    The default error handler used by the method router
+    when there is an error in the application.  This provides
+    a convienent place to appropriately handle exceptions.
+    Perhaps just reraising all exceptions.
+
+    :param DjangoDispatcher dispatcher: The dispatcher that
+        was used to dispatch this method.  Not used by
+        this handler.
+    :param ripozo.RequestContainer request: The request that
+        caused the exception.  Not used by this handler.
+    :param ripozo.AdapterBase adapter_class: The adapter
+    :param Exception exc:
+    :return: The correctly formatted status.
+    :rtype: HttpResponse
+    """
+    if isinstance(exc, RestException):
+        body, content_type, status_code = adapter_class.format_exception(exc)
+        return HttpResponse(body, status=status_code, content_type=content_type)
+    raise exc
 
 
 class MethodRouter(object):
@@ -29,9 +60,19 @@ class MethodRouter(object):
     """
     _method_map = None
 
-    def __init__(self, route, dispatcher):
+    def __init__(self, route, dispatcher, error_handler=default_error_handler):
+        """
+        :param unicode route:
+        :param DjangoDispatcher dispatcher:
+        :param function error_handler: A function that takes the dispatcher,
+            request, adapter base class, and an exception that was raised when
+            dispatching the request.
+        :return:
+        :rtype:
+        """
         self.route = route
         self.dispatcher = dispatcher
+        self.error_handler = error_handler
 
     def add_route(self, endpoint_func=None, endpoint=None, methods=None, **options):
         """
@@ -52,7 +93,7 @@ class MethodRouter(object):
                                  '{1}'.format(method, self.route))
             self.method_map[method.lower()] = endpoint_func
 
-    @csrf_exempt
+    @_csrf_wrapper
     def __call__(self, django_request, **url_parameters):
         """
         This is a call to a django method.
@@ -63,21 +104,17 @@ class MethodRouter(object):
         :return: The django HttpResponse
         :rtype: django.http.HttpResponse
         """
-        try:
-            endpoint_func = self.get_func_for_method(django_request.method)
-        except MethodNotAllowed:
-            return HttpResponseNotAllowed(six.iterkeys(self.method_map))
+        accepted_mimetypes = django_request.META.get('HTTP_ACCEPT', [])
+        adapter_class = self.dispatcher.get_adapter_for_type(accepted_mimetypes)
         body_parameters = QueryDict(django_request.body)
         request = DjangoRequestContainer(django_request, url_params=url_parameters,
                                          query_args=dict(django_request.GET), body_args=dict(body_parameters),
                                          headers=dict(django_request.META))
-        accepted_mimetypes = django_request.META.get('HTTP_ACCEPT', [])
         try:
+            endpoint_func = self.get_func_for_method(django_request.method)
             adapter = self.dispatcher.dispatch(endpoint_func, accepted_mimetypes, request)
-        except RestException, e:
-            adapter_class = self.dispatcher.get_adapter_for_type(accepted_mimetypes)
-            body, content_type, status_code = adapter_class.format_exception(e)
-            return HttpResponse(body, status=status_code, content_type=content_type)
+        except Exception as e:
+            return self.error_handler(self.dispatcher, request, adapter_class, e)
         response = HttpResponse(adapter.formatted_body, status=adapter.status_code)
         for header, value in six.iteritems(adapter.extra_headers):
             response[header] = value
@@ -101,10 +138,11 @@ class MethodRouter(object):
         :rtype: types.MethodType
         """
         http_method = http_method.lower()
-        if http_method not in self.method_map:
+        try:
+            return self.method_map[http_method]
+        except KeyError:
             raise MethodNotAllowed('The method {0} is not available for '
                                    'the route {1}'.format(http_method, self.route))
-        return self.method_map[http_method]
 
 _url_parameter_finder = re.compile(r'<(.+?)>')
 
@@ -114,9 +152,10 @@ class DjangoDispatcher(DispatcherBase):
     _url_map = None
     _routers = None
 
-    def __init__(self, base_url='', method_route_class=MethodRouter):
+    def __init__(self, base_url='', method_route_class=MethodRouter, error_handler=default_error_handler):
         self._base_url = base_url
         self.method_route_class = method_route_class
+        self.error_handler = error_handler
 
     @property
     def url_map(self):
@@ -158,7 +197,7 @@ class DjangoDispatcher(DispatcherBase):
         route = join_url_parts(self.base_url, route)
         route = self._convert_url_to_regex(route)
         if route not in self.url_map:
-            self.url_map[route] = self.method_route_class(route, self)
+            self.url_map[route] = self.method_route_class(route, self, self.error_handler)
         method_router = self.url_map[route]
         method_router.add_route(endpoint_func=endpoint_func, endpoint=endpoint,
                                 methods=methods, **options)
