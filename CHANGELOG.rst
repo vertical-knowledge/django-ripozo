@@ -4,6 +4,7 @@ CHANGELOG
 0.1.2 (unreleased)
 ==================
 
+- Removed support for Django 1.5
 - Using Accept-Types instead of Content-Type.
 
 0.1.1 (2015-04-23)
