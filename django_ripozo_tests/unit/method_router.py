@@ -15,6 +15,7 @@ from ripozo.exceptions import RestException
 
 import django
 import mock
+import six
 import unittest2
 
 
@@ -93,7 +94,7 @@ class TestMethodRouter(unittest2.TestCase):
         request = mock.MagicMock(method='get')
         resp = mr(request)
         self.assertIsInstance(resp, HttpResponse)
-        self.assertEqual(resp.content, 'some_body')
+        self.assertEqual(six.text_type(resp.content), six.text_type('some_body'))
         self.assertEqual(resp.status_code, 42)
 
     def test_call_exception_handler(self):
