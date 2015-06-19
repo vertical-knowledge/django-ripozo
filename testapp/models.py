@@ -6,7 +6,7 @@ class MyModel(models.Model):
     Doesn't include relationships or files for now
     """
     biginteger = models.BigIntegerField()
-    boolean = models.BooleanField()
+    boolean = models.BooleanField(default=False)
     char = models.CharField(max_length=100)
     csi = models.CommaSeparatedIntegerField(max_length=100)
     date_a = models.DateField()
