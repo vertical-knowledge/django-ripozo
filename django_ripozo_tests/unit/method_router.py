@@ -94,7 +94,7 @@ class TestMethodRouter(unittest2.TestCase):
         request = mock.MagicMock(method='get')
         resp = mr(request)
         self.assertIsInstance(resp, HttpResponse)
-        self.assertEqual(str(resp.content), str('some_body'))
+        self.assertEqual(resp.content.decode(), 'some_body'.decode())
         self.assertEqual(resp.status_code, 42)
 
     def test_call_exception_handler(self):
