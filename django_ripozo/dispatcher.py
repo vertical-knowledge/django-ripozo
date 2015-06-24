@@ -4,14 +4,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 __author__ = 'Tim Martin'
 
-from django.http import HttpResponseNotAllowed, HttpResponse, QueryDict
+from django.http import HttpResponse, QueryDict
 from django.conf.urls import url
 
 from django_ripozo.exceptions import MethodNotAllowed
 
 from functools import wraps
 
-from ripozo.dispatch.dispatch_base import DispatcherBase
+from ripozo.dispatch_base import DispatcherBase
 from ripozo.exceptions import RestException
 from ripozo.resources.request import RequestContainer
 from ripozo.utilities import join_url_parts

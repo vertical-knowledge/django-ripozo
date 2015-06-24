@@ -9,7 +9,7 @@ from django.db.models.manager import Manager
 from django.db.models.fields.related import ForeignObjectRel, ForeignKey
 
 from ripozo.exceptions import NotFoundException
-from ripozo.managers.base import BaseManager
+from ripozo.manager_base import BaseManager
 from ripozo.resources.fields.common import BaseField, StringField, \
     BooleanField, FloatField, DateTimeField, IntegerField
 from ripozo.utilities import make_json_safe
