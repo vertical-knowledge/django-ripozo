@@ -26,7 +26,7 @@ Minimal App
 You'll need to instantiate the django project in
 the standard manner.  If you aren't sure how to
 do this, check out the excellent
-`django documentation.<https://docs.djangoproject.com/en/1.8/intro/tutorial01/>`_
+`django documentation. <https://docs.djangoproject.com/en/1.8/intro/tutorial01/>`_
 
 In your app you'll need a resources.py file.
 
@@ -55,5 +55,5 @@ And in your urls.py file
 And just like that you have a fully functional application.
 
 Looking for a more extensive example?
-Check out an `example<http://django-ripozo.readthedocs.org/en/latest/tutorial/setup.html>`_
+Check out an `example <http://django-ripozo.readthedocs.org/en/latest/tutorial/setup.html>`_
 with database interactions as well.
