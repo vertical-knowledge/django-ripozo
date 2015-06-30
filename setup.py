@@ -7,7 +7,7 @@ __author__ = 'Tim Martin'
 
 from setuptools import setup
 
-version = '1.0.0'
+version = '1.0.1.dev0'
 
 setup(
     author=__author__,
