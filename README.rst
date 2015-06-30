@@ -20,6 +20,9 @@ Hypermedia, HATEOAS, and other REST apis.
 
 Looking for the `ripozo documentation? <http://ripozo.readthedocs.org/>`_
 
+Support Django 1.6, 1.7, and 1.8.
+python 2.6, 2.7, 3.3, 3.4, pypy
+
 Minimal App
 -----------
 
