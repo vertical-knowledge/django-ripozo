@@ -1,12 +1,24 @@
 django-ripozo
 =============
 
+.. image:: https://travis-ci.org/vertical-knowledge/django-ripozo.svg?branch=master&style=flat
+    :target: https://travis-ci.org/vertical-knowledge/django-ripozo
+    :alt: test status
+
+.. image:: https://coveralls.io/repos/vertical-knowledge/django-ripozo/badge.svg?branch=master&style=flat
+    :target: https://coveralls.io/r/vertical-knowledge/django-ripozo?branch=master
+    :alt: test coverage
+
+.. image:: https://readthedocs.org/projects/django-ripozo/badge/?version=latest&style=flat
+    :target: https://django-ripozo.readthedocs.org/
+    :alt: documentation status
+
 Integrates ripozo with django for fast, flexible 
 Hypermedia, HATEOAS, and other REST apis.
 
-`Full django-ripozo documentation <>`_
+`Full django-ripozo documentation <http://django-ripozo.readthedocs.org/>`_
 
-Looking for the `ripozo documentation?<http://ripozo.readthedocs.org/>`_
+Looking for the `ripozo documentation? <http://ripozo.readthedocs.org/>`_
 
 Minimal App
 -----------
