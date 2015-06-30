@@ -43,4 +43,7 @@ class TestDispatcher(UnittestBase, unittest2.TestCase):
         d.register_route('fake', endpoint_func=fake, route='route', methods=['GET'])
         route = DjangoDispatcher._convert_url_to_regex('route')
         self.assertIsInstance(d.url_patterns, list)
-        self.assertEqual(d.url_patterns[0]._regex, route)
+        regexes = [p._regex for p in d.url_patterns]
+        self.assertEqual(len(regexes), 2)
+        self.assertIn(route, regexes)
+        self.assertIn('^$', regexes)
