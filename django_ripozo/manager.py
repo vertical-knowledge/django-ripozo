@@ -19,6 +19,29 @@ import six
 
 logger = logging.getLogger(__name__)
 
+_COLUMN_FIELD_MAP = {
+    models.IntegerField: IntegerField,
+    models.BigIntegerField: IntegerField,
+    models.AutoField: IntegerField,
+    models.CharField: StringField,
+    models.GenericIPAddressField: StringField,
+    models.IPAddressField: StringField,
+    models.DecimalField: StringField,
+    models.DateTimeField: DateTimeField,
+    models.DateField: DateTimeField,
+    models.TimeField: DateTimeField,
+    models.BooleanField: BooleanField,
+    models.NullBooleanField: BooleanField,
+    models.FloatField: FloatField,
+    models.CommaSeparatedIntegerField: StringField,
+    models.EmailField: StringField,
+    models.PositiveSmallIntegerField: IntegerField,
+    models.PositiveIntegerField: IntegerField,
+    models.SlugField: StringField,
+    models.SmallIntegerField: IntegerField,
+    models.URLField: StringField
+}
+
 
 class DjangoManager(BaseManager):
     """
@@ -68,19 +91,11 @@ class DjangoManager(BaseManager):
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
         column = cls._get_field_python_type(cls.model, name)
-        if isinstance(column, (models.IntegerField, models.AutoField)):
-            return IntegerField(name)
-        elif isinstance(column, (models.CharField, models.GenericIPAddressField,
-                                 models.IPAddressField, models.DecimalField)):
-            return StringField(name)
-        elif isinstance(column, (models.DateTimeField, models.DateField, models.TimeField)):
-            return DateTimeField(name)
-        elif isinstance(column, (models.BooleanField, models.NullBooleanField,)):
-            return BooleanField(name)
-        elif isinstance(column, models.FloatField):
-            return FloatField(name)
-        else:
-            return BaseField(name)
+        column_type = type(column)
+        if column_type in _COLUMN_FIELD_MAP:
+            field_class = _COLUMN_FIELD_MAP[column_type]
+            return field_class(name)
+        return BaseField(name)
 
     def create(self, values, *args, **kwargs):
         """
