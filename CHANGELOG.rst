@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-0.2.1 (unreleased)
+1.0.0 (2015-06-30)
 ==================
 
 - Nothing changed yet.
