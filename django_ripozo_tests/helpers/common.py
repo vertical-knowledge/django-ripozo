@@ -49,6 +49,7 @@ class UnittestBase(object):
             pass
         call_command('syncdb', interactive=False)
         try:
+            call_command('makemigrations')
             call_command('migrate', interactive=False)
         except:
             pass

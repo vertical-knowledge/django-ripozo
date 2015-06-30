@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = (
     'django_ripozo',
-    'testapp'
+    'testapp',
 )
 
 MIDDLEWARE_CLASSES = tuple()

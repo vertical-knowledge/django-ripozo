@@ -36,7 +36,7 @@ class TestDispatcher(UnittestBase, unittest2.TestCase):
         """
         d = DjangoDispatcher()
         self.assertIsInstance(d.url_patterns, list)
-        self.assertEqual(d.url_patterns, [])
+        self.assertEqual(len(d.url_patterns), 1)
 
         def fake():
             pass

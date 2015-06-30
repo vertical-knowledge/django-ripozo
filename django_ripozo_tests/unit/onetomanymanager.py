@@ -16,12 +16,12 @@ class TestDjangoManager(UnittestBase, unittest2.TestCase):
     def setUp(self):
         class OneManager(DjangoManager):
             model = OneToMany
-            _fields = ['id', 'one_value', 'manies.id', 'manies.many_value']
+            fields = ['id', 'one_value', 'manies.id', 'manies.many_value']
 
         class ManyManager(DjangoManager):
             # TODO Test one creation
             model = ManyToOne
-            _fields = ['id', 'many_value', 'one_id']
+            fields = ['id', 'many_value', 'one_id']
 
         self.one = OneManager()
         self.many = ManyManager()

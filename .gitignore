@@ -70,3 +70,5 @@ setup.cfg
 
 # SQLite files
 *.sqlite3
+*.sqlite
+

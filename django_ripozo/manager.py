@@ -98,6 +98,7 @@ class DjangoManager(BaseManager):
         """
         logger.info('Creating model {0} with values {1}'.format(self.model.__name__, values))
         model = self.model()
+        values = self.valid_fields(values, self.create_fields)
         model = self._set_fields_on_model(model, values)
         model.save()
         return self.serialize_model(model)
@@ -167,9 +168,8 @@ class DjangoManager(BaseManager):
         logger.info('Updating model {0} with lookup keys {1}: values = '
                     '{2}'.format(self.model.__name__, lookup_keys, updates))
         model = self.get_model(lookup_keys)
+        updates = self.valid_fields(updates, self.update_fields)
         for key, value in six.iteritems(updates):
-            if key not in self.fields:
-                continue
             setattr(model, key, value)
         model.save()
         return self.serialize_model(model)

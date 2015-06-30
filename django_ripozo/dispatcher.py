@@ -152,10 +152,12 @@ class DjangoDispatcher(DispatcherBase):
     _url_map = None
     _routers = None
 
-    def __init__(self, base_url='', method_route_class=MethodRouter, error_handler=default_error_handler):
+    def __init__(self, base_url='', method_route_class=MethodRouter,
+                 error_handler=default_error_handler, **kwargs):
         self._base_url = base_url
         self.method_route_class = method_route_class
         self.error_handler = error_handler
+        super(DjangoDispatcher, self).__init__(**kwargs)
 
     @property
     def url_map(self):

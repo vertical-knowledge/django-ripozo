@@ -6,13 +6,15 @@ from __future__ import unicode_literals
 from django_ripozo import DjangoDispatcher
 
 import mock
+import re
 import unittest2
 
 
 class TestDjangoDispatcher(unittest2.TestCase):
     def test_url_map(self):
         d = DjangoDispatcher()
-        self.assertDictEqual(d.url_map, {})
+        self.assertEqual(len(d.url_map), 1)
+        self.assertIn('^$', d.url_map)
 
     def test_base_url(self):
         d = DjangoDispatcher(base_url='blah')
@@ -25,7 +27,7 @@ class TestDjangoDispatcher(unittest2.TestCase):
         """
         d = DjangoDispatcher()
         self.assertIsInstance(d.url_patterns, list)
-        self.assertEqual(d.url_patterns, [])
+        self.assertEqual(len(d.url_patterns), 1)
 
         def fake():
             pass
@@ -39,7 +41,7 @@ class TestDjangoDispatcher(unittest2.TestCase):
         d.register_route('fake', route='fake2')
         mr = d.url_map['^fake2$']
         self.assertIsInstance(mr, mock.MagicMock)
-        self.assertEqual(mr.add_route.call_count, 1)
+        self.assertEqual(mr.add_route.call_count, 2)
 
     def test_convert_url_to_regex(self):
         """

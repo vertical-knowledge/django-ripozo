@@ -42,11 +42,11 @@ class TestDjangoManager(UnittestBase, unittest2.TestCase):
     def setUp(self):
         class MyMangaer(DjangoManager):
             model = MyModel
-            _fields = ['id', 'biginteger', 'boolean', 'char', 'csi',
-                       'date_a', 'datetime_a', 'decimal_a',
-                       'email', 'float_a', 'integer', 'ipaddress', 'genericip',
-                       'nullbool', 'positiveint', 'positivesmallint', 'slug',
-                       'smallint', 'time_a', 'url']
+            fields = ['id', 'biginteger', 'boolean', 'char', 'csi',
+                      'date_a', 'datetime_a', 'decimal_a',
+                      'email', 'float_a', 'integer', 'ipaddress', 'genericip',
+                      'nullbool', 'positiveint', 'positivesmallint', 'slug',
+                      'smallint', 'time_a', 'url']
 
         self.model = MyModel
         self.manager = MyMangaer
@@ -204,7 +204,7 @@ class TestDjangoManager(UnittestBase, unittest2.TestCase):
         they are available.
         """
         class ListManager(self.manager):
-            _list_fields = ['id']
+            list_fields = ['id']
 
         vals, meta = self.manager().retrieve_list({})
         original_length = len(vals)
