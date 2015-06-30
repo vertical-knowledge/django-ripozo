@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-0.1.2 (unreleased)
+0.2.0 (2015-06-29)
 ==================
 
 - Removed support for Django 1.5
