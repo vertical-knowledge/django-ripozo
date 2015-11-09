@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ripozo.resources.relationships import ListRelationship, Relationship
 from ripozo.resources.restmixins import CRUDL
 from ripozo.resources.constructor import ResourceMetaClass
 
@@ -10,15 +11,30 @@ from django_ripozo.manager import DjangoManager
 
 
 def _get_pks(model):
-    return tuple(model._meta.pk.name)
+    return model._meta.pk.name,
 
 
 def _get_fields_for_model(model):
-    return model._meta.get_fields()
+    fields = []
+    for field in model._meta.get_fields():
+        if not field.is_relation:
+            fields.append(field.name)
+            continue
+        partial = field.name
+        complete = '{0}.{1}'.format(partial, field.related_model._meta.pk.name)
+        fields.append(complete)
+    return fields
 
 
 def _get_relationships(model):
-    raise NotImplementedError
+    relationships = []
+    for field in model._meta.get_fields():
+        if not field.is_relation:
+            continue
+        rel_class = ListRelationship if field.one_to_many or field.many_to_many else Relationship
+        rel = rel_class(field.name, relation=field.related_model.__name__)
+        relationships.append(rel)
+    return tuple(relationships)
 
 
 def create_resource(model, resource_bases=(CRUDL,),
