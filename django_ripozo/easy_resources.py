@@ -11,10 +11,13 @@ from django_ripozo.manager import DjangoManager
 
 
 def _get_pks(model):
+    """Gets the primary key name as a tuple
+    for a model"""
     return model._meta.pk.name,
 
 
 def _get_fields_for_model(model):
+    """Gets all of the fields for the model"""
     fields = []
     for field in model._meta.get_fields():
         if not field.is_relation:
@@ -27,6 +30,8 @@ def _get_fields_for_model(model):
 
 
 def _get_relationships(model):
+    """Gets a tuple of appropriately constructed
+    Relationship/ListRelationship models for the model"""
     relationships = []
     for field in model._meta.get_fields():
         if not field.is_relation:
