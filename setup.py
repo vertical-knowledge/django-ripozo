@@ -22,8 +22,8 @@ setup(
     description=('Integrates ripozo with django for fast, '
                  'flexible Hypermedia, HATEOAS, and other REST apis'),
     install_requires=[
-        'ripozo',
-        'Django>=1.4',
+        'ripozo>=1.0.0',
+        'Django>=1.6',
         'six'
     ],
     classifiers=[
