@@ -33,7 +33,7 @@ def _get_fields_for_model(model):
     try:
         all_fields = model._meta.get_fields()
     except AttributeError:  # Django < 1.8
-        return _get_relationships_old_django(model)
+        return _get_fields_old_django(model)
     for field in all_fields:
         if not field.is_relation:
             fields.append(field.name)
