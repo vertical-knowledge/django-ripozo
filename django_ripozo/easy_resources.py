@@ -30,9 +30,11 @@ def _get_fields_for_model(model):
     Gets all of the fields for the model
     """
     fields = []
-    if not hasattr(model._meta, 'get_fields'):
-        return _get_fields_old_django(model)
-    for field in model._meta.get_fields():
+    try:
+        all_fields = model._meta.get_fields()
+    except AttributeError:  # Django < 1.8
+        return _get_relationships_old_django(model)
+    for field in all_fields:
         if not field.is_relation:
             fields.append(field.name)
             continue
@@ -61,9 +63,11 @@ def _get_relationships(model):
     Relationship/ListRelationship models for the model
     """
     relationships = []
-    if not hasattr(model, 'get_fields'):
+    try:
+        all_fields = model._meta.get_fields()
+    except AttributeError:  # Django < 1.8
         return _get_relationships_old_django(model)
-    for field in model._meta.get_fields():
+    for field in all_fields:
         if not field.is_relation:
             continue
         rel_class = ListRelationship if field.one_to_many or field.many_to_many else Relationship
