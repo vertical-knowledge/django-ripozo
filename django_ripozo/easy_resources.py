@@ -3,6 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.db.models.fields.related import ForeignRelatedObjectsDescriptor, \
+    RenameRelatedObjectDescriptorMethods, ReverseManyRelatedObjectsDescriptor, \
+    ManyRelatedObjectsDescriptor, SingleRelatedObjectDescriptor
 from ripozo.resources.relationships import ListRelationship, Relationship
 from ripozo.resources.restmixins import CRUDL
 from ripozo.resources.constructor import ResourceMetaClass
@@ -11,14 +14,20 @@ from django_ripozo.manager import DjangoManager
 
 
 def _get_pks(model):
-    """Gets the primary key name as a tuple
-    for a model"""
+    """
+    Gets the primary key name as a tuple
+    for a model
+    """
     return model._meta.pk.name,
 
 
 def _get_fields_for_model(model):
-    """Gets all of the fields for the model"""
+    """
+    Gets all of the fields for the model
+    """
     fields = []
+    if not hasattr(model._meta, 'get_fields'):
+        return _get_fields_old_django(model)
     for field in model._meta.get_fields():
         if not field.is_relation:
             fields.append(field.name)
@@ -29,16 +38,54 @@ def _get_fields_for_model(model):
     return fields
 
 
+def _get_fields_old_django(model):
+    """
+    For django < 1.8
+    """
+    fields = [f.name for f in model._meta.fields]
+    for name in dir(model):
+        attr = getattr(model, name)
+        if isinstance(attr, ForeignRelatedObjectsDescriptor):
+            pk = attr.related.model._meta.pk.name
+            fields.append('{0}.{1}'.format(name, pk))
+    return fields
+
+
 def _get_relationships(model):
-    """Gets a tuple of appropriately constructed
-    Relationship/ListRelationship models for the model"""
+    """
+    Gets a tuple of appropriately constructed
+    Relationship/ListRelationship models for the model
+    """
     relationships = []
+    if not hasattr(model, 'get_fields'):
+        return _get_relationships_old_django(model)
     for field in model._meta.get_fields():
         if not field.is_relation:
             continue
         rel_class = ListRelationship if field.one_to_many or field.many_to_many else Relationship
         rel = rel_class(field.name, relation=field.related_model.__name__)
         relationships.append(rel)
+    return tuple(relationships)
+
+
+def _get_relationships_old_django(model):
+    """for django < 1.8"""
+    relationships = []
+    for name in dir(model):
+        attr = getattr(model, name)
+        if isinstance(attr, SingleRelatedObjectDescriptor):
+            relation_name = attr.related.model.__name__
+            relationships.append(Relationship(name, relation=relation_name))
+        elif isinstance(type(attr), RenameRelatedObjectDescriptorMethods) or\
+                isinstance(attr, ReverseManyRelatedObjectsDescriptor):
+            relation_name = attr.field.rel.to.__name__
+            if isinstance(attr, ReverseManyRelatedObjectsDescriptor):
+                relationships.append(ListRelationship(name, relation=relation_name))
+            else:
+                relationships.append(Relationship(name, relation=relation_name))
+        elif isinstance(attr, (ForeignRelatedObjectsDescriptor, ManyRelatedObjectsDescriptor)):
+            relation_name = attr.related.model.__name__
+            relationships.append(ListRelationship(name, relation=relation_name))
     return tuple(relationships)
 
 

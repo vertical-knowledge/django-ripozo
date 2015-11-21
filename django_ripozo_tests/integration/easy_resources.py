@@ -9,7 +9,8 @@ from django_ripozo.easy_resources import _get_pks, _get_fields_for_model, \
     _get_relationships, create_resource
 import unittest2
 
-from testapp.models import OneToMany, ManyToOne, MyModel
+from testapp.models import OneToMany, ManyToOne, MyModel, ManyToManyFirst, \
+    ManyToManySecond, OneFirst, OneSecond
 
 
 class TestEasyResource(unittest2.TestCase):
@@ -48,4 +49,40 @@ class TestEasyResource(unittest2.TestCase):
         self.assertEqual(len(res2._relationships), 1)
         self.assertEqual(res2.resource_name, 'many_to_one')
         self.assertTupleEqual(res2.pks, ('id',))
+
+    def test_get_relationships_many_to_many_implicit(self):
+        resp = _get_relationships(ManyToManyFirst)
+        self.assertEqual(len(resp), 1)
+        self.assertIsInstance(resp, tuple)
+        rel = resp[0]
+        self.assertEqual(rel.name, 'all_the_manies')
+        self.assertEqual(rel._relation, 'ManyToManySecond')
+        self.assertIsInstance(rel, ListRelationship)
+
+    def test_get_relationships_many_to_many_explicit(self):
+        resp = _get_relationships(ManyToManySecond)
+        self.assertEqual(len(resp), 1)
+        self.assertIsInstance(resp, tuple)
+        rel = resp[0]
+        self.assertEqual(rel.name, 'many_to_many')
+        self.assertEqual(rel._relation, 'ManyToManyFirst')
+        self.assertIsInstance(rel, ListRelationship)
+
+    def test_get_relationships_one_to_one_implicit(self):
+        resp = _get_relationships(OneFirst)
+        self.assertEqual(len(resp), 1)
+        self.assertIsInstance(resp, tuple)
+        rel = resp[0]
+        self.assertEqual(rel.name, 'second')
+        self.assertEqual(rel._relation, 'OneSecond')
+        self.assertIsInstance(rel, Relationship)
+
+    def test_get_relationships_one_to_one_explicit(self):
+        resp = _get_relationships(OneSecond)
+        self.assertEqual(len(resp), 1)
+        self.assertIsInstance(resp, tuple)
+        rel = resp[0]
+        self.assertEqual(rel.name, 'first')
+        self.assertEqual(rel._relation, 'OneFirst')
+        self.assertIsInstance(rel, Relationship)
 
