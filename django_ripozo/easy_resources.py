@@ -3,12 +3,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.db.models.fields.related import ForeignRelatedObjectsDescriptor, \
-    RenameRelatedObjectDescriptorMethods, ReverseManyRelatedObjectsDescriptor, \
-    ManyRelatedObjectsDescriptor, SingleRelatedObjectDescriptor
+try:
+    from django.db.models.fields.related import ForeignRelatedObjectsDescriptor, \
+        RenameRelatedObjectDescriptorMethods, ReverseManyRelatedObjectsDescriptor, \
+        ManyRelatedObjectsDescriptor, SingleRelatedObjectDescriptor
+except ImportError:
+    pass  # These are only for django versions < 1.8
 from ripozo.resources.relationships import ListRelationship, Relationship
 from ripozo.resources.restmixins import CRUDL
 from ripozo.resources.constructor import ResourceMetaClass
+
 
 from django_ripozo.manager import DjangoManager
 
