@@ -39,3 +39,21 @@ class ManyToOne(models.Model):
     """
     one = models.ForeignKey('OneToMany', related_name='manies')
     many_value = models.CharField(max_length=63)
+
+
+class ManyToManyFirst(models.Model):
+    value = models.CharField(max_length=63)
+
+
+class ManyToManySecond(models.Model):
+    value = models.CharField(max_length=63)
+    many_to_many = models.ManyToManyField(ManyToManyFirst, related_name='all_the_manies')
+
+
+class OneFirst(models.Model):
+    value = models.CharField(max_length=63)
+
+
+class OneSecond(models.Model):
+    value = models.CharField(max_length=63)
+    first = models.OneToOneField(OneFirst, related_name='second')

@@ -4,7 +4,7 @@ CHANGELOG
 1.0.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Added Easy Resources which allow a user to easily create resources from django models
 
 
 1.0.0 (2015-06-30)

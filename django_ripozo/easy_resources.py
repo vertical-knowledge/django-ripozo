@@ -3,22 +3,98 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+try:
+    from django.db.models.fields.related import ForeignRelatedObjectsDescriptor, \
+        RenameRelatedObjectDescriptorMethods, ReverseManyRelatedObjectsDescriptor, \
+        ManyRelatedObjectsDescriptor, SingleRelatedObjectDescriptor
+except ImportError:
+    pass  # These are only for django versions < 1.8
+from ripozo.resources.relationships import ListRelationship, Relationship
 from ripozo.resources.restmixins import CRUDL
 from ripozo.resources.constructor import ResourceMetaClass
+
 
 from django_ripozo.manager import DjangoManager
 
 
 def _get_pks(model):
-    return tuple(model._meta.pk.name)
+    """
+    Gets the primary key name as a tuple
+    for a model
+    """
+    return model._meta.pk.name,
 
 
 def _get_fields_for_model(model):
-    return model._meta.get_fields()
+    """
+    Gets all of the fields for the model
+    """
+    fields = []
+    try:
+        all_fields = model._meta.get_fields()
+    except AttributeError:  # Django < 1.8
+        return _get_fields_old_django(model)
+    for field in all_fields:
+        if not field.is_relation:
+            fields.append(field.name)
+            continue
+        partial = field.name
+        complete = '{0}.{1}'.format(partial, field.related_model._meta.pk.name)
+        fields.append(complete)
+    return fields
+
+
+def _get_fields_old_django(model):
+    """
+    For django < 1.8
+    """
+    fields = [f.name for f in model._meta.fields]
+    for name in dir(model):
+        attr = getattr(model, name)
+        if isinstance(attr, ForeignRelatedObjectsDescriptor):
+            pk = attr.related.model._meta.pk.name
+            fields.append('{0}.{1}'.format(name, pk))
+    return fields
 
 
 def _get_relationships(model):
-    raise NotImplementedError
+    """
+    Gets a tuple of appropriately constructed
+    Relationship/ListRelationship models for the model
+    """
+    relationships = []
+    try:
+        all_fields = model._meta.get_fields()
+    except AttributeError:  # Django < 1.8
+        return _get_relationships_old_django(model)
+    for field in all_fields:
+        if not field.is_relation:
+            continue
+        rel_class = ListRelationship if field.one_to_many or field.many_to_many else Relationship
+        rel = rel_class(field.name, relation=field.related_model.__name__)
+        relationships.append(rel)
+    return tuple(relationships)
+
+
+def _get_relationships_old_django(model):
+    """for django < 1.8"""
+    relationships = []
+    for name in dir(model):
+        attr = getattr(model, name)
+        if isinstance(attr, SingleRelatedObjectDescriptor):
+            relation_name = attr.related.model.__name__
+            relationships.append(Relationship(name, relation=relation_name))
+        elif isinstance(type(attr), RenameRelatedObjectDescriptorMethods) or\
+                isinstance(attr, ReverseManyRelatedObjectsDescriptor):
+            relation_name = attr.field.rel.to.__name__
+            if isinstance(attr, ReverseManyRelatedObjectsDescriptor):
+                relationships.append(ListRelationship(name, relation=relation_name))
+            else:
+                relationships.append(Relationship(name, relation=relation_name))
+        elif isinstance(attr, (ForeignRelatedObjectsDescriptor, ManyRelatedObjectsDescriptor)):
+            relation_name = attr.related.model.__name__
+            relationships.append(ListRelationship(name, relation=relation_name))
+    return tuple(relationships)
 
 
 def create_resource(model, resource_bases=(CRUDL,),
