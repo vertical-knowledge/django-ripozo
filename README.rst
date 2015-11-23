@@ -24,6 +24,14 @@ Supports Django 1.6, 1.7, and 1.8.
 
 python 2.6, 2.7, 3.3, 3.4, pypy
 
+NOTE
+----
+
+Currently there are `compatibility issues <https://code.djangoproject.com/ticket/23763>`_
+with Django 1.6, 1.7 and python 3.5.  There is currently a fix in progress.
+However, two of our test environments will fail until the fix is deployed. All tests
+pass otherwise.
+
 Minimal App
 -----------
 
